@@ -1,0 +1,100 @@
+Date|Code|Event|Description attr1: Date attr2: Event	birthday
+Date|Code|Event|Description attr1: Event attr2: Date	birthday
+Date|Code|Event|Description attr1: Description attr2: Event	None
+Date|Code|Event|Description attr1: Event attr2: Code	None
+Place|Name|Year|Team|Time|Score|Heat(Pl) attr1: Place attr2: Name	identify
+Place|Name|Year|Team|Time|Score|Heat(Pl) attr1: Place attr2: Score	set
+Place|Name|Year|Team|Time|Score|Heat(Pl) attr1: Place attr2: Time	set
+Place|Name|Year|Team|Time|Score|Heat(Pl) attr1: Name attr2: Place	identify
+Place|Name|Year|Team|Time|Score|Heat(Pl) attr1: Name attr2: Score	mark
+Place|Name|Year|Team|Time|Score|Heat(Pl) attr1: Time attr2: Place	set
+Place|Name|Year|Team|Time|Score|Heat(Pl) attr1: Time attr2: Score	set
+Place|Name|Year|Team|Time|Score|Heat(Pl) attr1: Score attr2: Place	set
+Place|Name|Year|Team|Time|Score|Heat(Pl) attr1: Score attr2: Name	mark
+Place|Name|Year|Team|Time|Score|Heat(Pl) attr1: Score attr2: Time	set
+Place|Name|Year|Team|Time|Score|Heat(Pl) attr1: Team attr2: Place	None
+Place|Name|Year|Team|Time|Score|Heat(Pl) attr1: Place attr2: Year	None
+Place|Name|Year|Team|Time|Score|Heat(Pl) attr1: Team attr2: Time	None
+Place|Name|Year|Team|Time|Score|Heat(Pl) attr1: Team attr2: Name	None
+Place|Name|Year|Team|Time|Score|Heat(Pl) attr1: Team attr2: Time	None
+Place|Name|Year|Team|Time|Score|Heat(Pl) attr1: Heat(Pl) attr2: Place	None
+Place|Name|Year|Team|Time|Score|Heat(Pl) attr1: Year attr2: Score	None
+#|cover|title|author|isbn|isbn13|asin|num pages|avg rating|num ratings|date pub|date pub (ed.)|rating|my rating|review|notes|recommender|comments|votes|read count|date started|date read|date added|date purchased|owned|purchase location|condition|format attr1: cover attr2: author	book
+#|cover|title|author|isbn|isbn13|asin|num pages|avg rating|num ratings|date pub|date pub (ed.)|rating|my rating|review|notes|recommender|comments|votes|read count|date started|date read|date added|date purchased|owned|purchase location|condition|format attr1: author attr2: cover	book
+#|cover|title|author|isbn|isbn13|asin|num pages|avg rating|num ratings|date pub|date pub (ed.)|rating|my rating|review|notes|recommender|comments|votes|read count|date started|date read|date added|date purchased|owned|purchase location|condition|format attr1: num ratings attr2: my rating	rating
+#|cover|title|author|isbn|isbn13|asin|num pages|avg rating|num ratings|date pub|date pub (ed.)|rating|my rating|review|notes|recommender|comments|votes|read count|date started|date read|date added|date purchased|owned|purchase location|condition|format attr1: date pub attr2: date pub (ed.)	pub
+#|cover|title|author|isbn|isbn13|asin|num pages|avg rating|num ratings|date pub|date pub (ed.)|rating|my rating|review|notes|recommender|comments|votes|read count|date started|date read|date added|date purchased|owned|purchase location|condition|format attr1: date pub (ed.) attr2: date pub	pub
+#|cover|title|author|isbn|isbn13|asin|num pages|avg rating|num ratings|date pub|date pub (ed.)|rating|my rating|review|notes|recommender|comments|votes|read count|date started|date read|date added|date purchased|owned|purchase location|condition|format attr1: rating attr2: review	evaluation
+#|cover|title|author|isbn|isbn13|asin|num pages|avg rating|num ratings|date pub|date pub (ed.)|rating|my rating|review|notes|recommender|comments|votes|read count|date started|date read|date added|date purchased|owned|purchase location|condition|format attr1: my rating attr2: num ratings	rating
+#|cover|title|author|isbn|isbn13|asin|num pages|avg rating|num ratings|date pub|date pub (ed.)|rating|my rating|review|notes|recommender|comments|votes|read count|date started|date read|date added|date purchased|owned|purchase location|condition|format attr1: review attr2: rating	evaluation
+#|cover|title|author|isbn|isbn13|asin|num pages|avg rating|num ratings|date pub|date pub (ed.)|rating|my rating|review|notes|recommender|comments|votes|read count|date started|date read|date added|date purchased|owned|purchase location|condition|format attr1: date started attr2: date added	dating
+#|cover|title|author|isbn|isbn13|asin|num pages|avg rating|num ratings|date pub|date pub (ed.)|rating|my rating|review|notes|recommender|comments|votes|read count|date started|date read|date added|date purchased|owned|purchase location|condition|format attr1: date started attr2: date read	dating
+#|cover|title|author|isbn|isbn13|asin|num pages|avg rating|num ratings|date pub|date pub (ed.)|rating|my rating|review|notes|recommender|comments|votes|read count|date started|date read|date added|date purchased|owned|purchase location|condition|format attr1: date read attr2: date purchased	date
+#|cover|title|author|isbn|isbn13|asin|num pages|avg rating|num ratings|date pub|date pub (ed.)|rating|my rating|review|notes|recommender|comments|votes|read count|date started|date read|date added|date purchased|owned|purchase location|condition|format attr1: date read attr2: date started	dating
+#|cover|title|author|isbn|isbn13|asin|num pages|avg rating|num ratings|date pub|date pub (ed.)|rating|my rating|review|notes|recommender|comments|votes|read count|date started|date read|date added|date purchased|owned|purchase location|condition|format attr1: date read attr2: date added	dating
+#|cover|title|author|isbn|isbn13|asin|num pages|avg rating|num ratings|date pub|date pub (ed.)|rating|my rating|review|notes|recommender|comments|votes|read count|date started|date read|date added|date purchased|owned|purchase location|condition|format attr1: date added attr2: date started	dating
+#|cover|title|author|isbn|isbn13|asin|num pages|avg rating|num ratings|date pub|date pub (ed.)|rating|my rating|review|notes|recommender|comments|votes|read count|date started|date read|date added|date purchased|owned|purchase location|condition|format attr1: date added attr2: date read	dating
+#|cover|title|author|isbn|isbn13|asin|num pages|avg rating|num ratings|date pub|date pub (ed.)|rating|my rating|review|notes|recommender|comments|votes|read count|date started|date read|date added|date purchased|owned|purchase location|condition|format attr1: date purchased attr2: date read	date
+#|cover|title|author|isbn|isbn13|asin|num pages|avg rating|num ratings|date pub|date pub (ed.)|rating|my rating|review|notes|recommender|comments|votes|read count|date started|date read|date added|date purchased|owned|purchase location|condition|format attr1: date started attr2: date purchased	None
+#|cover|title|author|isbn|isbn13|asin|num pages|avg rating|num ratings|date pub|date pub (ed.)|rating|my rating|review|notes|recommender|comments|votes|read count|date started|date read|date added|date purchased|owned|purchase location|condition|format attr1: my rating attr2: date started	None
+#|cover|title|author|isbn|isbn13|asin|num pages|avg rating|num ratings|date pub|date pub (ed.)|rating|my rating|review|notes|recommender|comments|votes|read count|date started|date read|date added|date purchased|owned|purchase location|condition|format attr1: date added attr2: avg rating	None
+#|cover|title|author|isbn|isbn13|asin|num pages|avg rating|num ratings|date pub|date pub (ed.)|rating|my rating|review|notes|recommender|comments|votes|read count|date started|date read|date added|date purchased|owned|purchase location|condition|format attr1: date pub attr2: date read	None
+#|cover|title|author|isbn|isbn13|asin|num pages|avg rating|num ratings|date pub|date pub (ed.)|rating|my rating|review|notes|recommender|comments|votes|read count|date started|date read|date added|date purchased|owned|purchase location|condition|format attr1: avg rating attr2: comments	None
+#|cover|title|author|isbn|isbn13|asin|num pages|avg rating|num ratings|date pub|date pub (ed.)|rating|my rating|review|notes|recommender|comments|votes|read count|date started|date read|date added|date purchased|owned|purchase location|condition|format attr1: read count attr2: date started	None
+#|cover|title|author|isbn|isbn13|asin|num pages|avg rating|num ratings|date pub|date pub (ed.)|rating|my rating|review|notes|recommender|comments|votes|read count|date started|date read|date added|date purchased|owned|purchase location|condition|format attr1: cover attr2: notes	None
+#|cover|title|author|isbn|isbn13|asin|num pages|avg rating|num ratings|date pub|date pub (ed.)|rating|my rating|review|notes|recommender|comments|votes|read count|date started|date read|date added|date purchased|owned|purchase location|condition|format attr1: votes attr2: date purchased	None
+#|cover|title|author|isbn|isbn13|asin|num pages|avg rating|num ratings|date pub|date pub (ed.)|rating|my rating|review|notes|recommender|comments|votes|read count|date started|date read|date added|date purchased|owned|purchase location|condition|format attr1: author attr2: isbn	None
+#|cover|title|author|isbn|isbn13|asin|num pages|avg rating|num ratings|date pub|date pub (ed.)|rating|my rating|review|notes|recommender|comments|votes|read count|date started|date read|date added|date purchased|owned|purchase location|condition|format attr1: num ratings attr2: author	None
+#|cover|title|author|isbn|isbn13|asin|num pages|avg rating|num ratings|date pub|date pub (ed.)|rating|my rating|review|notes|recommender|comments|votes|read count|date started|date read|date added|date purchased|owned|purchase location|condition|format attr1: date read attr2: title	None
+#|cover|title|author|isbn|isbn13|asin|num pages|avg rating|num ratings|date pub|date pub (ed.)|rating|my rating|review|notes|recommender|comments|votes|read count|date started|date read|date added|date purchased|owned|purchase location|condition|format attr1: review attr2: date read	None
+#|cover|title|author|isbn|isbn13|asin|num pages|avg rating|num ratings|date pub|date pub (ed.)|rating|my rating|review|notes|recommender|comments|votes|read count|date started|date read|date added|date purchased|owned|purchase location|condition|format attr1: owned attr2: purchase location	None
+#|cover|title|author|isbn|isbn13|asin|num pages|avg rating|num ratings|date pub|date pub (ed.)|rating|my rating|review|notes|recommender|comments|votes|read count|date started|date read|date added|date purchased|owned|purchase location|condition|format attr1: date read attr2: rating	None
+#|cover|title|author|isbn|isbn13|asin|num pages|avg rating|num ratings|date pub|date pub (ed.)|rating|my rating|review|notes|recommender|comments|votes|read count|date started|date read|date added|date purchased|owned|purchase location|condition|format attr1: votes attr2: isbn13	None
+#|cover|title|author|isbn|isbn13|asin|num pages|avg rating|num ratings|date pub|date pub (ed.)|rating|my rating|review|notes|recommender|comments|votes|read count|date started|date read|date added|date purchased|owned|purchase location|condition|format attr1: condition attr2: author	None
+Loc #|Frequency|Emission|Class|Units|Pag|Pwr|Lat|Long|City|County|State attr1: Pag attr2: City	town
+Loc #|Frequency|Emission|Class|Units|Pag|Pwr|Lat|Long|City|County|State attr1: City attr2: Pag	town
+Loc #|Frequency|Emission|Class|Units|Pag|Pwr|Lat|Long|City|County|State attr1: City attr2: State	capital
+Loc #|Frequency|Emission|Class|Units|Pag|Pwr|Lat|Long|City|County|State attr1: State attr2: City	capital
+Loc #|Frequency|Emission|Class|Units|Pag|Pwr|Lat|Long|City|County|State attr1: Long attr2: Class	None
+Loc #|Frequency|Emission|Class|Units|Pag|Pwr|Lat|Long|City|County|State attr1: Class attr2: State	None
+Loc #|Frequency|Emission|Class|Units|Pag|Pwr|Lat|Long|City|County|State attr1: Lat attr2: Frequency	None
+Loc #|Frequency|Emission|Class|Units|Pag|Pwr|Lat|Long|City|County|State attr1: County attr2: County	None
+Denim|US|UK|AU|FR|IT|JP|China (Tops)|China (Bottoms) attr1: China (Tops) attr2: China (Bottoms)	china
+Denim|US|UK|AU|FR|IT|JP|China (Tops)|China (Bottoms) attr1: China (Bottoms) attr2: China (Tops)	china
+Denim|US|UK|AU|FR|IT|JP|China (Tops)|China (Bottoms) attr1: AU attr2: JP	None
+Denim|US|UK|AU|FR|IT|JP|China (Tops)|China (Bottoms) attr1: IT attr2: IT	None
+Name|Album|Artist|Time|Price attr1: Name attr2: Artist	person
+Name|Album|Artist|Time|Price attr1: Artist attr2: Name	person
+Name|Album|Artist|Time|Price attr1: Time attr2: Price	money
+Name|Album|Artist|Time|Price attr1: Price attr2: Time	money
+Name|Album|Artist|Time|Price attr1: Album attr2: Name	None
+Name|Album|Artist|Time|Price attr1: Artist attr2: Time	None
+Name|Album|Artist|Time|Price attr1: Name attr2: Album	None
+Games|Event|Language|Location|Level|Distribution period attr1: Location attr2: Level	stage
+Games|Event|Language|Location|Level|Distribution period attr1: Location attr2: Level	place
+Games|Event|Language|Location|Level|Distribution period attr1: Level attr2: Location	stage
+Games|Event|Language|Location|Level|Distribution period attr1: Level attr2: Location	place
+Games|Event|Language|Location|Level|Distribution period attr1: Event attr2: Distribution period	None
+Games|Event|Language|Location|Level|Distribution period attr1: Language attr2: Event	None
+Games|Event|Language|Location|Level|Distribution period attr1: Level attr2: Distribution period	None
+Specification|Status|Comment attr1: Specification attr2: Comment	document
+Specification|Status|Comment attr1: Comment attr2: Specification	document
+Specification|Status|Comment attr1: Status attr2: Comment	None
+Specification|Status|Comment attr1: Status attr2: Specification	None
+Fee|Large entity fee|small entity fee|micro entity fee attr1: Large entity fee attr2: micro entity fee	entities
+Fee|Large entity fee|small entity fee|micro entity fee attr1: Large entity fee attr2: small entity fee	entities
+Fee|Large entity fee|small entity fee|micro entity fee attr1: small entity fee attr2: micro entity fee	fee
+Fee|Large entity fee|small entity fee|micro entity fee attr1: small entity fee attr2: micro entity fee	entities
+Fee|Large entity fee|small entity fee|micro entity fee attr1: small entity fee attr2: Large entity fee	entities
+Fee|Large entity fee|small entity fee|micro entity fee attr1: micro entity fee attr2: Large entity fee	entities
+Fee|Large entity fee|small entity fee|micro entity fee attr1: micro entity fee attr2: small entity fee	fee
+Fee|Large entity fee|small entity fee|micro entity fee attr1: micro entity fee attr2: small entity fee	entities
+Fee|Large entity fee|small entity fee|micro entity fee attr1: Fee attr2: Large entity fee	None
+Guideline|Section|For Information About attr1: Guideline attr2: For Information About	information
+Guideline|Section|For Information About attr1: For Information About attr2: Guideline	information
+Guideline|Section|For Information About attr1: Section attr2: Guideline	None
+Guideline|Section|For Information About attr1: Section attr2: For Information About	None
+Title|Price|Purchase attr1: Price attr2: Purchase	cost
+Title|Price|Purchase attr1: Purchase attr2: Price	cost
+Title|Price|Purchase attr1: Title attr2: Title	None
+Date|Code|Event|Description attr1: Date attr2: Event	birthday

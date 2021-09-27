@@ -12,4 +12,4 @@ We present Pythia, a system that, given a relational table, returns the queries 
 	3) The notebooks to measure the performance of our proposed model using T5 for task 1 and task 3. SIGMOD-T5-LabelAmbiguity-Task1(3)-colab
 	4) The notebook to compare Totto and AmbTotto. SIGMOD-AmbTotto-colab.
 	Please note that for all colab notebooks is required a google cloud storage bucket to store the model and the data.
-- src/pythia contains the code that runs Algorithm 1 in the paper (Pythia.py) and the code to generate the training data for AmbTotto (AmbTotto.py). Please note that some extensions are been used in the Pythia algorithm to support the creation of the AmbTotto training data
+- src/pythia contains the code that runs Algorithm 1 in the paper (Pythia.py) and the code to generate the training data for AmbTotto (AmbTotto.py). Scripts to fine-tune and test a T5-based annotator are available in ```src/pythia/T5Annotator/```. Please note that some extensions are been used in the Pythia algorithm to support the creation of the AmbTotto training data
