@@ -93,23 +93,26 @@ if __name__ == '__main__':
     saveFile = True
     sample = True
     sampleSize = 1000
+    limitResults = 10 ## - 1 for no limit
     connection = getDBConnection(user_uenc, pw_uenc, host, port, dbname)
     #table = loadTable('iris')
     #table = loadTable('basket_full')
-    table = loadTable('soccer')
+    #table = loadTable('soccer')
     #table = loadTable('basket_acronyms')
+    #table = loadTable('abalone')
     #table = loadTable('abalone_short')
-    #table = loadTable('adults_short')
+    #table = loadTable('adult_short')
+    #table = loadTable('adult')
     #table = loadTable('mushroom_short')
+    table = loadTable('mushroom')
     #matchType = 'contradicting'
-    #matchType = 'uniform' ## uniform_true
     #matchType = 'uniform_false'
     matchType = 'uniform_true'
     operatorsPrintConfigAttribute = [('has the same', 'as'), ('has higher', 'than'), ('has lower', 'than'), ('has different', 'as')]
     operatorsPrintConfigRow = ['has', 'has more than', 'has less than', 'has not']
     a_queries, a_queries_with_data = find_a_queries(table, templates, matchType, connection, operatorsPrintConfigRow,
                                                     operatorsPrintConfigAttribute, operators=["=", ">", "<"],
-                                                    executeQuery=True)
+                                                    executeQuery=True, limitQueryResults=limitResults)
     #for aq in a_queries:
     #    print(aq)
     print("Total A-Queries Generated:", len(a_queries))
@@ -145,7 +148,8 @@ if __name__ == '__main__':
         line = x + "\t" + matchType +"\n"
         lines.append(line)
     if saveFile:
-        f = open("../../data/" + tName + "_" + matchType + "_train.tsv", "w")
+        #f = open("../../data/generated/" + tName + "_" + matchType + "_train.tsv", "w")
+        f = open("../../data/generated/" + tName + "_" + matchType + "_test.tsv", "w")
         print("Save to: ", f.name)
         try:
             f.writelines(lines)

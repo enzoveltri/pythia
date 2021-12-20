@@ -70,8 +70,8 @@ def _basketFullProfiling():
     ambiguities.append(('blocks', 'town', 'city'))
     ambiguities.append(('field goal attempts', 'free throws attempted', 'attempt'))
     ## Profiling information
-    tableName = 'basket_full'
-    attributes = [('id', NUMERICAL),
+    tableName = 'basket_full_names'
+    attributes = [('index', CATEGORICAL),
                   ('player_name', CATEGORICAL),
                   ('first_name', CATEGORICAL),
                   ('minutes', NUMERICAL),
@@ -109,86 +109,86 @@ def _basketFullProfiling():
 def _basketAcronymsProfiling():
     ## Pythia predictions
     ambiguities = []
-    ambiguities.append(('DREB', 'OREB', 'REB'))
-    ambiguities.append(('DREB', 'REB', 'REB'))
-    ambiguities.append(('FG3_PCT', 'FG3A', 'FG'))
-    ambiguities.append(('FG3_PCT', 'FG3M', 'FG'))
-    ambiguities.append(('FG3_PCT', 'FG_PCT', 'PCT'))
-    ambiguities.append(('FG3_PCT', 'FGA', 'FG'))
-    ambiguities.append(('FG3_PCT', 'FT_PCT', 'PCT'))
-    ambiguities.append(('FG3A', 'FG3_PCT', 'FG'))
-    ambiguities.append(('FG3A', 'FG3M', 'FG'))
-    ambiguities.append(('FG3A', 'FGA', 'FG'))
-    ambiguities.append(('FG3M', 'FG3_PCT', 'FG'))
-    ambiguities.append(('FG3M', 'FG3A', 'FG'))
-    ambiguities.append(('FG3M', 'FG_PCT', 'FG'))
-    ambiguities.append(('FG3M', 'FGA', 'FG'))
-    ambiguities.append(('FG_PCT', 'FG3_PCT', 'PCT'))
-    ambiguities.append(('FG_PCT', 'FG3A', 'FG'))
-    ambiguities.append(('FG_PCT', 'FG3M', 'FG'))
-    ambiguities.append(('FG_PCT', 'FGA', 'FG'))
-    ambiguities.append(('FG_PCT', 'FT_PCT', 'PCT'))
-    ambiguities.append(('FGA', 'FG3A', 'FG'))
-    ambiguities.append(('FGA', 'FG3M', 'FG'))
-    ambiguities.append(('FGA', 'FG_PCT', 'FG'))
-    ambiguities.append(('FGA', 'FTA', 'FG'))
-    ambiguities.append(('FGM', 'FG3A', 'FG'))
-    ambiguities.append(('FGM', 'FG3M', 'FG'))
-    ambiguities.append(('FGM', 'FG_PCT', 'FG'))
-    ambiguities.append(('FGM', 'FGA', 'FG'))
-    ambiguities.append(('FIRST_NAME', 'PLAYER_NAME', 'NAME'))
-    ambiguities.append(('FIRST_NAME', 'SECOND_NAME', 'NAME'))
-    ambiguities.append(('FT_PCT', 'FG3_PCT', 'PCT'))
-    ambiguities.append(('FT_PCT', 'FG_PCT', 'PCT'))
-    ambiguities.append(('FT_PCT', 'FTA', 'FT'))
-    ambiguities.append(('FT_PCT', 'FTM', 'FT'))
-    ambiguities.append(('FTA', 'FT_PCT', 'FT'))
-    ambiguities.append(('FTA', 'FTM', 'FT'))
-    ambiguities.append(('FTM', 'FT_PCT', 'FT'))
-    ambiguities.append(('FTM', 'FTA', 'FT'))
-    ambiguities.append(('OREB', 'DREB', 'REB'))
-    ambiguities.append(('OREB', 'REB', 'REB'))
-    ambiguities.append(('PLAYER_NAME', 'FIRST_NAME', 'NAME'))
-    ambiguities.append(('PLAYER_NAME', 'SECOND_NAME', 'NAME'))
-    ambiguities.append(('REB', 'DREB', 'REB'))
-    ambiguities.append(('REB', 'OREB', 'REB'))
-    ambiguities.append(('TEAM_CITY', 'TOWN', 'CITY'))
-    ambiguities.append(('TO', 'TOWN', 'CITY'))
-    ambiguities.append(('TOWN', 'TEAM_CITY', 'CITY'))
+    ambiguities.append(('dreb', 'oreb', 'reb'))
+    ambiguities.append(('dreb', 'reb', 'reb'))
+    ambiguities.append(('fg3_pct', 'fg3a', 'fg'))
+    ambiguities.append(('fg3_pct', 'fg3m', 'fg'))
+    ambiguities.append(('fg3_pct', 'fg_pct', 'pct'))
+    ambiguities.append(('fg3_pct', 'fga', 'fg'))
+    ambiguities.append(('fg3_pct', 'ft_pct', 'pct'))
+    ambiguities.append(('fg3a', 'fg3_pct', 'fg'))
+    ambiguities.append(('fg3a', 'fg3m', 'fg'))
+    ambiguities.append(('fg3a', 'fga', 'fg'))
+    ambiguities.append(('fg3m', 'fg3_pct', 'fg'))
+    ambiguities.append(('fg3m', 'fg3a', 'fg'))
+    ambiguities.append(('fg3m', 'fg_pct', 'fg'))
+    ambiguities.append(('fg3m', 'fga', 'fg'))
+    ambiguities.append(('fg_pct', 'fg3_pct', 'pct'))
+    ambiguities.append(('fg_pct', 'fg3a', 'fg'))
+    ambiguities.append(('fg_pct', 'fg3m', 'fg'))
+    ambiguities.append(('fg_pct', 'fga', 'fg'))
+    ambiguities.append(('fg_pct', 'ft_pct', 'pct'))
+    ambiguities.append(('fga', 'fg3a', 'fg'))
+    ambiguities.append(('fga', 'fg3m', 'fg'))
+    ambiguities.append(('fga', 'fg_pct', 'fg'))
+    ambiguities.append(('fga', 'fta', 'fg'))
+    ambiguities.append(('fgm', 'fg3a', 'fg'))
+    ambiguities.append(('fgm', 'fg3m', 'fg'))
+    ambiguities.append(('fgm', 'fg_pct', 'fg'))
+    ambiguities.append(('fgm', 'fga', 'fg'))
+    ambiguities.append(('first_name', 'player_name', 'name'))
+    ambiguities.append(('first_name', 'second_name', 'name'))
+    ambiguities.append(('ft_pct', 'fg3_pct', 'pct'))
+    ambiguities.append(('ft_pct', 'fg_pct', 'pct'))
+    ambiguities.append(('ft_pct', 'fta', 'ft'))
+    ambiguities.append(('ft_pct', 'ftm', 'ft'))
+    ambiguities.append(('fta', 'ft_pct', 'ft'))
+    ambiguities.append(('fta', 'ftm', 'ft'))
+    ambiguities.append(('ftm', 'ft_pct', 'ft'))
+    ambiguities.append(('ftm', 'fta', 'ft'))
+    ambiguities.append(('oreb', 'dreb', 'reb'))
+    ambiguities.append(('oreb', 'reb', 'reb'))
+    ambiguities.append(('player_name', 'first_name', 'name'))
+    ambiguities.append(('player_name', 'second_name', 'name'))
+    ambiguities.append(('reb', 'dreb', 'reb'))
+    ambiguities.append(('reb', 'oreb', 'reb'))
+    ambiguities.append(('team_city', 'town', 'city'))
+    ambiguities.append(('to', 'town', 'city'))
+    ambiguities.append(('town', 'team_city', 'city'))
     ## Profiling information
     tableName = 'basket_acronyms'
-    attributes = [('ID', NUMERICAL),
-                  ('PLAYER_NAME', CATEGORICAL),
-                  ('FIRST_NAME', CATEGORICAL),
-                  ('MIN', NUMERICAL),
-                  ('FGM', NUMERICAL),
-                  ('REB', NUMERICAL),
-                  ('FG3A', NUMERICAL),
-                  ('AST', NUMERICAL),
-                  ('FG3M', NUMERICAL),
-                  ('OREB', NUMERICAL),
-                  ('TO', NUMERICAL),
-                  ('START_POSITION', CATEGORICAL),
-                  ('PF', NUMERICAL),
-                  ('PTS', NUMERICAL),
-                  ('FGA', NUMERICAL),
-                  ('STL', NUMERICAL),
-                  ('FTA', NUMERICAL),
-                  ('BLK', NUMERICAL),
-                  ('DREB', NUMERICAL),
-                  ('FTM', NUMERICAL),
-                  ('FT_PCT', NUMERICAL),
-                  ('FG_PCT', NUMERICAL),
-                  ('FG3_PCT', NUMERICAL),
-                  ('SECOND_NAME', CATEGORICAL),
-                  ('TEAM_CITY', CATEGORICAL),
-                  ('TEAM', CATEGORICAL),
-                  ('TOWN', CATEGORICAL)]
-    pk = 'PLAYER_NAME'
+    attributes = [('index', CATEGORICAL),
+                  ('player_name', CATEGORICAL),
+                  ('first_name', CATEGORICAL),
+                  ('min', NUMERICAL),
+                  ('fgm', NUMERICAL),
+                  ('reb', NUMERICAL),
+                  ('fg3a', NUMERICAL),
+                  ('ast', NUMERICAL),
+                  ('fg3m', NUMERICAL),
+                  ('oreb', NUMERICAL),
+                  ('to', NUMERICAL),
+                  ('start_position', CATEGORICAL),
+                  ('pf', NUMERICAL),
+                  ('pts', NUMERICAL),
+                  ('fga', NUMERICAL),
+                  ('stl', NUMERICAL),
+                  ('fta', NUMERICAL),
+                  ('blk', NUMERICAL),
+                  ('dreb', NUMERICAL),
+                  ('ftm', NUMERICAL),
+                  ('ft_pct', NUMERICAL),
+                  ('fg_pct', NUMERICAL),
+                  ('fg3_pct', NUMERICAL),
+                  ('second_name', CATEGORICAL),
+                  ('team_city', CATEGORICAL),
+                  ('team', CATEGORICAL),
+                  ('town', CATEGORICAL)]
+    pk = 'player_name'
     ## FDS TEAM -> TOWN; TEAM -> TEAM_CITY
-    fds = [('TEAM', 'TOWN', ['in', 'has', 'players']), ('TEAM', 'TEAM_CITY', ['in', 'has', 'players'])]
+    fds = [('team', 'town', ['in', 'has', 'players']), ('team', 'team_city', ['in', 'has', 'players'])]
     # CKS: ID = PLAYER_NAME + TEAM
-    compositeKeys = [('PLAYER_NAME', 'TEAM')]
+    compositeKeys = [('player_name', 'team')]
     ambiguitiesWithType = _addType(ambiguities, attributes)
     return (ambiguitiesWithType, pk, fds, compositeKeys, tableName, attributes)
 
@@ -493,7 +493,7 @@ def loadTable(dataset):
         return _soccerProfiling()
     if dataset == 'abalone_short' or dataset == 'abalone':
         return _abaloneProfiling(dataset)
-    if dataset == 'adults_short' or dataset == 'adults':
+    if dataset == 'adult_short' or dataset == 'adult':
         return _adultsProfiling(dataset)
     if dataset == 'mushroom_short' or dataset == 'mushroom':
         return _mushroomProfiling(dataset)

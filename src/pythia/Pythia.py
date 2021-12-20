@@ -189,7 +189,9 @@ def fdStrategyTemplate(template, fd, pk, tableName):
         return a_query
     return None
 
-def checkWithData(a_query, type, connection, a_queries_with_data, stored_results, template, fd):
+def checkWithData(a_query, type, connection, a_queries_with_data, stored_results, template, fd, limitQueryResults):
+    if limitQueryResults > 0:
+        a_query += "\nLIMIT "+ str(limitQueryResults)
     results = executeQueryBatch(a_query, connection)
     if len(results) > 0:
         a_queries_with_data.append(a_query)
@@ -197,7 +199,8 @@ def checkWithData(a_query, type, connection, a_queries_with_data, stored_results
         stored_results.append(t_stored)
 
 def find_a_queries(table, templates, matchType, connection,
-                   operatorPrintConfigRow, operatorPrintConfigAttribute, operators=["=", ">", "<"], executeQuery=True):
+                   operatorPrintConfigRow, operatorPrintConfigAttribute, operators=["=", ">", "<"], executeQuery=True,
+                   limitQueryResults = -1):
     ## collect metainformation from table
     ambiguities = table[0]
     pk = table[1]
@@ -215,7 +218,7 @@ def find_a_queries(table, templates, matchType, connection,
                 a_query = fdStrategyTemplate(template, fd, pk, tableName)
                 #print(a_query)
                 if (a_query is not None and executeQuery):
-                    checkWithData(a_query, type, connection, a_queries_with_data, stored_results, template, fd)
+                    checkWithData(a_query, type, connection, a_queries_with_data, stored_results, template, fd, limitQueryResults)
         if (type == TYPE_ROW) and (len(compositeKeys) > 0):
             print("*** GENERATING A-QUERIES for ROWs")
             for ck in compositeKeys:
@@ -224,7 +227,7 @@ def find_a_queries(table, templates, matchType, connection,
                     for a_query in a_queries:
                         #print(a_query)
                         if (a_query is not None and executeQuery):
-                            checkWithData(a_query, type, connection, a_queries_with_data, stored_results, template, None)
+                            checkWithData(a_query, type, connection, a_queries_with_data, stored_results, template, None, limitQueryResults)
         if (type == TYPE_ATTRIBUTE) and (len(ambiguities) > 0):
             print("*** GENERATING A-QUERIES for ATTRIBUTEs")
             for operator in operators:
@@ -232,7 +235,7 @@ def find_a_queries(table, templates, matchType, connection,
                 for a_query in a_queries:
                     #print(a_query)
                     if (a_query is not None and executeQuery):
-                        checkWithData(a_query, type, connection, a_queries_with_data, stored_results, template, None)
+                        checkWithData(a_query, type, connection, a_queries_with_data, stored_results, template, None, limitQueryResults)
         if (type == TYPE_FULL) and (len(ambiguities) > 0) and (len(compositeKeys) > 0):
             print("*** GENERATING A-QUERIES for FULL")
             for ck in compositeKeys:
@@ -242,7 +245,7 @@ def find_a_queries(table, templates, matchType, connection,
                     for a_query in a_queries:
                         #print(a_query)
                         if (a_query is not None and executeQuery):
-                            checkWithData(a_query, type, connection, a_queries_with_data, stored_results, template)
+                            checkWithData(a_query, type, connection, a_queries_with_data, stored_results, template, limitQueryResults)
 
     return a_queries_with_data, stored_results
 

@@ -28,9 +28,11 @@ def printf(operator, label, values):
 
 def printo(operator, values):
     if operator == '=':
-        return values[0] +" "
+        return values[0] + " "
     if operator == '>':
-        return values[1] +" "
+        return values[1] + " "
     if operator == '<':
-        return values[2] +" "
+        return values[2] + " "
+    if operator == '<>':
+        return values[3] + " "
     print("*** ERROR in printf:", operator, values)
