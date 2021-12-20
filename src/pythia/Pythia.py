@@ -72,16 +72,16 @@ def attributeStrategy(templates, ambiguities, pk, tableName, operators, mt, prin
                 a_query = a_query.replace('$AMB_1$', '"'+a1+'"')
                 a_query = a_query.replace('$AMB_2$', '"'+a2+'"')
                 printf_string = printf(operator, label, printConfig).strip()
-                a_query = a_query.replace('$PRINT_F$', "' "+printf_string+" '")
                 if mt == 'contradicting':
                     a_query = a_query.replace('$MT_OPERATOR$', negOperator(operator))
                 else:
                     a_query = a_query.replace('$MT_OPERATOR$', operator)
+                a_query = a_query.replace('$PRINT_F$', "' " + printf_string + " '")
                 if checkAQueryComplete(a_query):
                     a_queries.append(a_query)
     return a_queries
 
-def attributeStrategy(template, ambiguities, pk,tableName, operator, mt, printConfig):
+def attributeStrategyTemplate(template, ambiguities, pk,tableName, operator, mt, printConfig):
     a_queries = []
     type = template[1]
     if type != TYPE_ATTRIBUTE:
@@ -97,11 +97,13 @@ def attributeStrategy(template, ambiguities, pk,tableName, operator, mt, printCo
         a_query = a_query.replace('$AMB_1$', '"'+a1[0]+'"')
         a_query = a_query.replace('$AMB_2$', '"'+a2[0]+'"')
         printf_string = printf(operator, label, printConfig).strip()
-        a_query = a_query.replace('$PRINT_F$', "' "+printf_string+" '")
         if mt == 'contradicting':
             a_query = a_query.replace('$MT_OPERATOR$', negOperator(operator))
         else:
             a_query = a_query.replace('$MT_OPERATOR$', operator)
+            if mt == 'uniform_false':
+                printf_string = printf(negOperator(operator), label, printConfig).strip()
+        a_query = a_query.replace('$PRINT_F$', "' "+printf_string+" '")
         if checkAQueryComplete(a_query):
             a_queries.append(a_query)
     return a_queries
@@ -156,11 +158,13 @@ def rowStrategyTemplate(template, ck, tableName, attributes, operator, mt, print
         a_query = a_query.replace('$A1_NAME$', ("' " + a[0] + "'"))
         a_query = a_query.replace('$TABLE$', tableName)
         printo_string = printo(operator, printConfig).strip()
-        a_query = a_query.replace('$PRINT_O$', " ' " + printo_string + " '")
         if mt == 'contradicting':
             a_query = a_query.replace('$MT_OPERATOR$', negOperator(operator))
         else:
-            a_query = a_query.replace('$MT_OPERATOR$', operator)
+            a_query = a_query.replace('$MT_OPERATOR$', operator) ## uniform_true
+            if mt == 'uniform_false':
+                printo_string = printo(negOperator(operator), printConfig).strip()
+        a_query = a_query.replace('$PRINT_O$', " ' " + printo_string + " '")
         if checkAQueryComplete(a_query):
             a_queries.append(a_query)
     return a_queries
@@ -192,8 +196,8 @@ def checkWithData(a_query, type, connection, a_queries_with_data, stored_results
         t_stored = (a_query, type, results, template, fd)
         stored_results.append(t_stored)
 
-def find_a_queries(table, templates, mathcType, connection,
-                   operatorPrintConfigRow, operatorPrintConfigAttribute, operators=["=", ">", "<"]):
+def find_a_queries(table, templates, matchType, connection,
+                   operatorPrintConfigRow, operatorPrintConfigAttribute, operators=["=", ">", "<"], executeQuery=True):
     ## collect metainformation from table
     ambiguities = table[0]
     pk = table[1]
@@ -209,31 +213,35 @@ def find_a_queries(table, templates, mathcType, connection,
             print("*** GENERATING A-QUERIES for FDS")
             for fd in fds:
                 a_query = fdStrategyTemplate(template, fd, pk, tableName)
-                if (a_query is not None):
+                #print(a_query)
+                if (a_query is not None and executeQuery):
                     checkWithData(a_query, type, connection, a_queries_with_data, stored_results, template, fd)
         if (type == TYPE_ROW) and (len(compositeKeys) > 0):
             print("*** GENERATING A-QUERIES for ROWs")
             for ck in compositeKeys:
                 for operator in operators:
-                    a_queries = rowStrategyTemplate(template, ck, tableName, attributes, operator, mathcType, operatorPrintConfigRow)
+                    a_queries = rowStrategyTemplate(template, ck, tableName, attributes, operator, matchType, operatorPrintConfigRow)
                     for a_query in a_queries:
-                        if (a_query is not None):
+                        #print(a_query)
+                        if (a_query is not None and executeQuery):
                             checkWithData(a_query, type, connection, a_queries_with_data, stored_results, template, None)
         if (type == TYPE_ATTRIBUTE) and (len(ambiguities) > 0):
             print("*** GENERATING A-QUERIES for ATTRIBUTEs")
             for operator in operators:
-                a_queries = attributeStrategy(template, ambiguities, pk, tableName, operator, mathcType, operatorPrintConfigAttribute)
+                a_queries = attributeStrategyTemplate(template, ambiguities, pk, tableName, operator, matchType, operatorPrintConfigAttribute)
                 for a_query in a_queries:
-                    if (a_query is not None):
+                    #print(a_query)
+                    if (a_query is not None and executeQuery):
                         checkWithData(a_query, type, connection, a_queries_with_data, stored_results, template, None)
         if (type == TYPE_FULL) and (len(ambiguities) > 0) and (len(compositeKeys) > 0):
             print("*** GENERATING A-QUERIES for FULL")
             for ck in compositeKeys:
                 subpk = ck[0]
                 for operator in operator:
-                    a_queries = attributeStrategy(template, ambiguities, subpk, tableName, operator, mathcType, operatorPrintConfigAttribute)
+                    a_queries = attributeStrategyTemplate(template, ambiguities, subpk, tableName, operator, matchType, operatorPrintConfigAttribute)
                     for a_query in a_queries:
-                        if (a_query is not None):
+                        #print(a_query)
+                        if (a_query is not None and executeQuery):
                             checkWithData(a_query, type, connection, a_queries_with_data, stored_results, template)
 
     return a_queries_with_data, stored_results

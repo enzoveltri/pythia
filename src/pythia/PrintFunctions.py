@@ -18,6 +18,12 @@ def printf(operator, label, values):
             return valComparison[0] +" " + label + " "
         else:
             return valComparison[0] +" " + label + " " + valComparison[1] + " "
+    if operator == '<>':
+        valComparison = values[3]
+        if len(valComparison) == 1:
+            return valComparison[0] +" " + label + " "
+        else:
+            return valComparison[0] +" " + label + " " + valComparison[1] + " "
     print("*** ERROR in printf:", operator, label, values)
 
 def printo(operator, values):

@@ -1,3 +1,4 @@
 .idea
 src/pythia/__pycache__
 notebooks/.ipynb_checkpoints
+src/datasets/__pycache__
