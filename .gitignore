@@ -2,3 +2,7 @@
 src/pythia/__pycache__
 notebooks/.ipynb_checkpoints
 src/datasets/__pycache__
+data/generated
+data/pythia-ambtotto
+data/task1
+notebooks/WDC

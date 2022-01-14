@@ -196,14 +196,14 @@ def _soccerProfiling():
     ## Pythia predictions
     ambiguities = []
     ambiguities.append(('tournamentid', 'tournamentregionid', 'tournament'))
-    ambiguities.append(('seasonname', 'tournamentname', 'name'))
+    #ambiguities.append(('seasonname', 'tournamentname', 'name'))
     ambiguities.append(('yellowcard', 'redcard', 'card'))
     ambiguities.append(('lastname', 'teamname', 'name'))
     ambiguities.append(('tournamentregionname', 'regioncode', 'region'))
     ambiguities.append(('tournamentid', 'tournamentshortname', 'tournament'))
     ambiguities.append(('tournamentname', 'tournamentshortname', 'tournament'))
     ambiguities.append(('playedpositions', 'playedpositionsshort', 'playedposition'))
-    ambiguities.append(('seasonname', 'tournamentregionname', 'name'))
+    #ambiguities.append(('seasonname', 'tournamentregionname', 'name'))
     ambiguities.append(('tournamentid', 'tournamentregionname', 'tournament'))
     ambiguities.append(('tournamentregioncode', 'tournamentshortname', 'tournament'))
     ambiguities.append(('tournamentregionname', 'tournamentshortname', 'tournament'))
@@ -216,7 +216,7 @@ def _soccerProfiling():
     ambiguities.append(('shotspergame', 'aerialwonpergame', 'game'))
     ambiguities.append(('ranking', 'positiontext', 'position'))
     ambiguities.append(('tournamentregionid', 'regioncode', 'region'))
-    ambiguities.append(('tournamentname', 'teamname', 'name'))
+    #ambiguities.append(('tournamentname', 'teamname', 'name'))
     ambiguities.append(('teamid', 'teamregionname', 'team'))
     ambiguities.append(('tournamentregionname', 'teamregionname', 'region'))
     ambiguities.append(('firstname', 'lastname', 'middle name'))
@@ -232,20 +232,20 @@ def _soccerProfiling():
     ambiguities.append(('tournamentid', 'tournamentname', 'tournament'))
     ambiguities.append(('index', 'weight', 'measure'))
     ambiguities.append(('tournamentregioncode', 'tournamentregionname', 'tournament'))
-    ambiguities.append(('firstname', 'teamname', 'name'))
+    #ambiguities.append(('firstname', 'teamname', 'name'))
     ambiguities.append(('tournamentid', 'tournamentregioncode', 'tournament'))
     ambiguities.append(('tournamentregionid', 'tournamentname', 'tournament'))
     ambiguities.append(('regioncode', 'teamregionname', 'region'))
     ambiguities.append(('playedpositions', 'positiontext', 'position'))
     ambiguities.append(('manofthematch', 'ismanofthematch', 'match'))
     ambiguities.append(('index', 'rating', 'rate'))
-    ambiguities.append(('seasonname', 'lastname', 'name'))
+    #ambiguities.append(('seasonname', 'lastname', 'name'))
     ambiguities.append(('firstname', 'name', 'forename'))
     ambiguities.append(('positiontext', 'playedpositionsshort', 'position'))
     ambiguities.append(('age', 'rating', 'measurement'))
     ambiguities.append(('index', 'age', 'measurement'))
     ambiguities.append(('age', 'height', 'measurement'))
-    ambiguities.append(('seasonname', 'teamname', 'name'))
+    #ambiguities.append(('seasonname', 'teamname', 'name'))
     ambiguities.append(('playerid', 'teamid', 'id'))
     ambiguities.append(('tournamentregioncode', 'tournamentname', 'tournament'))
     ambiguities.append(('index', 'ranking', 'rate'))
@@ -293,7 +293,7 @@ def _soccerProfiling():
     pk = 'name'
     #FDs: teamname --> tournamentregionname
     fds = [('teamname', 'tournamentregionname', ['in', 'has', 'players'])]
-    compositeKeys = []
+    compositeKeys = [('lastname', 'firstname', 'teamname'), ('firstname', 'lastname', 'teamname')]
     ambiguitiesWithType = _addType(ambiguities, attributes)
     return (ambiguitiesWithType, pk, fds, compositeKeys, tableName, attributes)
 

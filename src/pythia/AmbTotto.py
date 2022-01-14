@@ -2,6 +2,7 @@ from DBUtils import executeQueryBatch, getDBConnection, getColumnsName
 from DatasetProfiling import loadTable
 from Pythia import find_a_queries
 from Constants import TYPE_FULL,TYPE_ROW,TYPE_ATTRIBUTE,TYPE_FD
+import random
 
 ### DB CONNECTION POSTGRESQL
 dialect = "postgresql"
@@ -76,34 +77,52 @@ def to_totto_fd(results, fdTemplateQuery, tableName , pk, connection, fd):
     return to_totto
 
 #######################################
+## TODO: introduce a grammar otherwise define rules: comma (,) is preceded by a space and followed by a space, atoms are all space deviced
 attributeTemplate = "SELECT CONCAT(b1.$PK$, $PRINT_F$, b2.$PK$),b1.$PK$, b2.$PK$,b1.$AMB_1$,b2.$AMB_1$, b1.$AMB_2$, b2.$AMB_2$ FROM $TABLE$ b1, $TABLE$ b2 WHERE b1.$PK$ <> b2.$PK$ AND b1.$AMB_1$ $OPERATOR$ b2.$AMB_1$ AND b1.$AMB_2$ $MT_OPERATOR$ b2.$AMB_2$"
-rowTemplate = "SELECT CONCAT(b1.$SUB_PK$, $PRINT_O$, b2.$A1$, $A1_NAME$),b1.$SUB_PK$,b2.$SUB_PK$,b1.$A1$,b2.$A1$,b1.$PK$,b2.$PK$ FROM $TABLE$ b1, $TABLE$ b2 WHERE b1.$SUB_PK$ = b2.$SUB_PK$ AND b1.$A1$ $MT_OPERATOR$ b2.$A1$"
+rowTemplate = "SELECT CONCAT( b1.$SUB_PK$ , $PRINT_O$, b2.$A1$, $A1_NAME$ ) , b1.$SUB_PK$ , b2.$SUB_PK$ , b1.$A1$ , b2.$A1$ , b1.$PK$ , b2.$PK$ FROM $TABLE$ b1 , $TABLE$ b2 WHERE b1.$SUB_PK$ = b2.$SUB_PK$ AND b1.$A1$ $MT_OPERATOR$ b2.$A1$"
 fdTemplate = "SELECT CONCAT($LHS_NAME$ , $PRINT_FD$, b1.$RHS$ , $PRINT_FD$, Count(b1.$PK$), $PRINT_FD$),b1.$LHS$,b1.$RHS$  FROM $TABLE$ b1 GROUP BY b1.$RHS$, b1.$LHS$ HAVING COUNT(b1.$LHS$) > 1"
 fdTemplateQuery = "SELECT b1.$LHS$,b1.$RHS$, b1.$PK$ FROM $TABLE$ b1 WHERE b1.$RHS$ = $VALUE$"
 fdTemplate2 = "SELECT CONCAT($LHS_NAME$, $PRINT_FD$, b1.$RHS$ , $PRINT_FD$, Count(b1.$PK$), $PRINT_FD$),b1.$LHS$,b1.$RHS$ FROM $TABLE$ b1 WHERE b1.$RHS$ in (select $RHS$ from  (select $RHS$, $LHS$ from $TABLE$ group by $RHS$, $LHS$) as Nested group by $RHS$ having count(*) > 1) GROUP BY b1.$RHS$, b1.$LHS$"
+fullTemplate = "SELECT CONCAT( b1.$SUB_PK$ , $PRINT_F$ , b2.$SUB_PK$ ) , b1.$SUB_PK$ , b2.$SUB_PK$ , b1.$PK$ , b2.$PK$ , b1.$AMB_1$ , b2.$AMB_1$ , b1.$AMB_2$ , b2.$AMB_2$ FROM $TABLE$ b1 , $TABLE$ b2 WHERE b1.$SUB_PK$ = b2.$SUB_PK$ AND b1.$AMB_1$ $OPERATOR$ b2.$AMB_1$ AND b1.$AMB_2$ $MT_OPERATOR$ b2.$AMB_2$"
 
-templates = [(attributeTemplate, TYPE_ATTRIBUTE), (rowTemplate,TYPE_ROW), (fdTemplate2,TYPE_FD)]
-#templates = [(attributeTemplate, TYPE_ATTRIBUTE)]
+
+
+#templates = [(attributeTemplate, TYPE_ATTRIBUTE), (rowTemplate,TYPE_ROW), (fdTemplate2,TYPE_FD)]
+templates = [(fullTemplate, TYPE_FULL)]
+#templates = [((rowTemplate,TYPE_ROW))]
 
 
 if __name__ == '__main__':
-    saveFile = True
+    saveFile = False
+    limitResults = 10
+    sample = True
+    sampleSize = limitResults
     connection = getDBConnection(user_uenc, pw_uenc, host, port, dbname)
+    ######################
+    ### train
+    ######################
     #table = loadTable('iris')
-    table = loadTable('basket_full')
-    #table = loadTable('soccer')
+    #table = loadTable('basket_full')
+    table = loadTable('soccer')
+    ######################
+    ### test
+    ######################
     #table = loadTable('basket_acronyms')
-    #table = loadTable('abalone_short')
-    #table = loadTable('adults_short')
+    #table = loadTable('abalone')
+    #table = loadTable('adult')
+    #table = loadTable('adult_short')
+    #table = loadTable('mushroom')
     #table = loadTable('mushroom_short')
     matchType = 'contradicting'
-    #matchType = 'uniform'
-    operatorsPrintConfigAttribute = [('has the same', 'as'), ('has higher', 'than'), ('has lower', 'than')]
-    operatorsPrintConfigRow = ['has', 'has more than', 'has less than']
+    #matchType = 'uniform_false'
+    #matchType = 'uniform_true'
+    operatorsPrintConfigAttribute = [('has the same', 'as'), ('has higher', 'than'), ('has lower', 'than'), ('has different', 'as')]
+    operatorsPrintConfigRow = ['has', 'has more than', 'has less than', 'has not']
     a_queries, a_queries_with_data = find_a_queries(table, templates, matchType, connection, operatorsPrintConfigRow,
-                                                    operatorsPrintConfigAttribute, operators=["=", ">", "<"])
-    #for aq in a_queries:
-    #    print(aq)
+                                                    operatorsPrintConfigAttribute, operators=["=", ">", "<"],
+                                                    executeQuery=True, limitQueryResults=limitResults)
+    for aq in a_queries:
+        print(aq)
     print("Total A-Queries Generated:", len(a_queries))
     print("Distinct Sentences: ", len(set(a_queries)))
     to_totto_list = []
@@ -126,12 +145,17 @@ if __name__ == '__main__':
         example = to_totto_input(tName, tName, data, sentence)
         totto_examples.add(example)
     lines = []
+    if sample:
+        totto_examples = list(totto_examples)
+        random.shuffle(totto_examples)
+        totto_examples = totto_examples[0:sampleSize]
     for x, y in totto_examples:
         #print(x, y)
         line = x + "\t" + y +"\n"
         lines.append(line)
     if saveFile:
-        f = open("./"+tName+".tsv", "w")
+        #f = open("../../data/pythia-ambtotto/" + tName + "_" + matchType + "_train.tsv", "w")
+        f = open("../../data/pythia-ambtotto/" + tName + "_" + matchType + "_test.tsv", "w")
         try:
             f.writelines(lines)
         except:
