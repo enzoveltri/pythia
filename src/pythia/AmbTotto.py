@@ -32,6 +32,21 @@ def to_totto_input(title, section, selectedData, sentence):
     totto_x += to_table(selectedData)
     return (totto_x, sentence)
 
+def to_totto_full(results, cols):
+    to_totto = []
+    for row in results:
+        sentence = row[0]
+        colList = []
+        row1List = []
+        row2List = []
+        for i in range(1, len(cols), 2):
+            colList.append(cols[i])
+            row1List.append(row[i])
+            row2List.append(row[i+1])
+        data = [tuple(colList), tuple(row1List), tuple(row2List)]
+        to_totto.append((sentence, data))
+    return to_totto
+
 def to_totto_row(results, cols):
     to_totto = []
     for row in results:
@@ -87,16 +102,19 @@ fullTemplate = "SELECT CONCAT( b1.$SUB_PK$ , $PRINT_F$ , b2.$SUB_PK$ ) , b1.$SUB
 
 
 
-#templates = [(attributeTemplate, TYPE_ATTRIBUTE), (rowTemplate,TYPE_ROW), (fdTemplate2,TYPE_FD)]
-templates = [(fullTemplate, TYPE_FULL)]
-#templates = [((rowTemplate,TYPE_ROW))]
+templates = [(attributeTemplate, TYPE_ATTRIBUTE), (rowTemplate,TYPE_ROW), (fdTemplate2,TYPE_FD), (fullTemplate, TYPE_FULL)]
+
+#templates = [(attributeTemplate, TYPE_ATTRIBUTE)]
+#templates = [(rowTemplate,TYPE_ROW)]
+#templates = [(fdTemplate2,TYPE_FD)]
+#templates = [(fullTemplate, TYPE_FULL)]
 
 
 if __name__ == '__main__':
-    saveFile = False
-    limitResults = 10
+    saveFile = True
+    limitResults = 2000
     sample = True
-    sampleSize = limitResults
+    sampleSize = 2000
     connection = getDBConnection(user_uenc, pw_uenc, host, port, dbname)
     ######################
     ### train
@@ -121,12 +139,13 @@ if __name__ == '__main__':
     a_queries, a_queries_with_data = find_a_queries(table, templates, matchType, connection, operatorsPrintConfigRow,
                                                     operatorsPrintConfigAttribute, operators=["=", ">", "<"],
                                                     executeQuery=True, limitQueryResults=limitResults)
-    for aq in a_queries:
-        print(aq)
+    #for aq in a_queries:
+    #    print(aq)
     print("Total A-Queries Generated:", len(a_queries))
-    print("Distinct Sentences: ", len(set(a_queries)))
+    print("Differents A-Queries: ", len(set(a_queries)))
     to_totto_list = []
     tName = table[4]
+    type = ""
     for a_query, type, results, template, fd in a_queries_with_data:
         if (type == TYPE_FD):
             pk = table[1]
@@ -139,6 +158,10 @@ if __name__ == '__main__':
         if (type == TYPE_ATTRIBUTE):
             columnsQuery = getColumnsName(a_query, connection)
             to_totto = to_totto_attribute(results, columnsQuery)
+            to_totto_list.extend(to_totto)
+        if (type == TYPE_FULL):
+            columnsQuery = getColumnsName(a_query, connection)
+            to_totto = to_totto_full(results, columnsQuery)
             to_totto_list.extend(to_totto)
     totto_examples = set()
     for sentence, data in to_totto_list:
@@ -154,8 +177,8 @@ if __name__ == '__main__':
         line = x + "\t" + y +"\n"
         lines.append(line)
     if saveFile:
-        #f = open("../../data/pythia-ambtotto/" + tName + "_" + matchType + "_train.tsv", "w")
-        f = open("../../data/pythia-ambtotto/" + tName + "_" + matchType + "_test.tsv", "w")
+        f = open("../../data/pythia_ambtotto-vldb/" + tName + "_" + matchType + "_" + type + "_train2000.tsv", "w")
+        #f = open("../../data/pythia_ambtotto-vldb/" + tName + "_" + matchType + "_" + type + "_test.tsv", "w")
         try:
             f.writelines(lines)
         except:
