@@ -3,7 +3,6 @@ from DatasetProfiling import loadTable
 from Pythia import find_a_queries
 from Constants import TYPE_FULL,TYPE_ROW,TYPE_ATTRIBUTE,TYPE_FD
 import random
-import time
 
 ### DB CONNECTION POSTGRESQL
 dialect = "postgresql"
@@ -93,7 +92,7 @@ def to_totto_fd(results, fdTemplateQuery, tableName , pk, connection, fd):
     return to_totto
 
 #######################################
-## TODO: introduce a grammar otherwise define rules: comma (,) is preceded by a space and followed by a space, atoms are all space devided
+## TODO: introduce a grammar otherwise define rules: comma (,) is preceded by a space and followed by a space, atoms are all space deviced
 attributeTemplate = "SELECT CONCAT(b1.$PK$, $PRINT_F$, b2.$PK$),b1.$PK$, b2.$PK$,b1.$AMB_1$,b2.$AMB_1$, b1.$AMB_2$, b2.$AMB_2$ FROM $TABLE$ b1, $TABLE$ b2 WHERE b1.$PK$ <> b2.$PK$ AND b1.$AMB_1$ $OPERATOR$ b2.$AMB_1$ AND b1.$AMB_2$ $MT_OPERATOR$ b2.$AMB_2$"
 rowTemplate = "SELECT CONCAT( b1.$SUB_PK$ , $PRINT_O$, b2.$A1$, $A1_NAME$ ) , b1.$SUB_PK$ , b2.$SUB_PK$ , b1.$A1$ , b2.$A1$ , b1.$PK$ , b2.$PK$ FROM $TABLE$ b1 , $TABLE$ b2 WHERE b1.$SUB_PK$ = b2.$SUB_PK$ AND b1.$A1$ $MT_OPERATOR$ b2.$A1$"
 fdTemplate = "SELECT CONCAT($LHS_NAME$ , $PRINT_FD$, b1.$RHS$ , $PRINT_FD$, Count(b1.$PK$), $PRINT_FD$),b1.$LHS$,b1.$RHS$  FROM $TABLE$ b1 GROUP BY b1.$RHS$, b1.$LHS$ HAVING COUNT(b1.$LHS$) > 1"
@@ -112,42 +111,38 @@ templates = [(attributeTemplate, TYPE_ATTRIBUTE), (rowTemplate,TYPE_ROW), (fdTem
 
 
 if __name__ == '__main__':
-    saveFile = False
-    limitResults = -1 #-1 for unlimit results
-    sample = False
-    sampleSize = 40000
+    saveFile = True
+    limitResults = 2000
+    sample = True
+    sampleSize = 2000
     connection = getDBConnection(user_uenc, pw_uenc, host, port, dbname)
     ######################
     ### train
     ######################
     #table = loadTable('iris')
     #table = loadTable('basket_full')
-    #table = loadTable('soccer')
+    table = loadTable('soccer')
     ######################
     ### test
     ######################
     #table = loadTable('basket_acronyms')
     #table = loadTable('abalone')
-    #table = loadTable('abalone_short')
     #table = loadTable('adult')
     #table = loadTable('adult_short')
     #table = loadTable('mushroom')
-    table = loadTable('mushroom_short')
+    #table = loadTable('mushroom_short')
     matchType = 'contradicting'
     #matchType = 'uniform_false'
     #matchType = 'uniform_true'
     operatorsPrintConfigAttribute = [('has the same', 'as'), ('has higher', 'than'), ('has lower', 'than'), ('has different', 'as')]
     operatorsPrintConfigRow = ['has', 'has more than', 'has less than', 'has not']
-    start_time = time.time()
     a_queries, a_queries_with_data = find_a_queries(table, templates, matchType, connection, operatorsPrintConfigRow,
                                                     operatorsPrintConfigAttribute, operators=["=", ">", "<"],
                                                     executeQuery=True, limitQueryResults=limitResults)
-    end_time = time.time()
     #for aq in a_queries:
     #    print(aq)
     print("Total A-Queries Generated:", len(a_queries))
     print("Differents A-Queries: ", len(set(a_queries)))
-    print("Time (s): ", (end_time-start_time))
     to_totto_list = []
     tName = table[4]
     type = ""
@@ -181,9 +176,8 @@ if __name__ == '__main__':
         #print(x, y)
         line = x + "\t" + y +"\n"
         lines.append(line)
-    print("# Sentences: ", len(totto_examples))
     if saveFile:
-        f = open("../../data/pythia_ambtotto-vldb/" + tName + "_" + matchType + "_" + type + "_train_40000.tsv", "w")
+        f = open("../../data/pythia_ambtotto-vldb/" + tName + "_" + matchType + "_" + type + "_train2000.tsv", "w")
         #f = open("../../data/pythia_ambtotto-vldb/" + tName + "_" + matchType + "_" + type + "_test.tsv", "w")
         try:
             f.writelines(lines)
