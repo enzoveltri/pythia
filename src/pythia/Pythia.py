@@ -34,54 +34,6 @@ def checkOperatorWithType(attribute, operator):
         return False
     return True
 
-######## TO DEL
-def fdStrategy(templates, fds, pk, tableName):
-    a_queries = []
-    for template, type in templates:
-        if type != 'fd':
-            continue
-        for fd in fds:
-            a_query = fdStrategyTemplate(template, fd, pk, tableName)
-            if a_query is not None:
-                a_queries.append(a_query)
-        # for lhs, rhs, values in fds:
-        #     a_query = template
-        #     a_query = a_query.replace('$LHS_NAME$', ("' " + lhs + "'"))
-        #     a_query = a_query.replace('$LHS$', ('"' + lhs + '"'))
-        #     a_query = a_query.replace('$RHS$', ('"' + rhs + '"'))
-        #     a_query = a_query.replace('$PK$', ('"' + pk + '"'))
-        #     a_query = a_query.replace('$TABLE$', tableName)
-        #     for value in values:
-        #         a_query = a_query.replace('$PRINT_FD$',"' " +value +" '", 1)
-        #     if checkAQueryComplete(a_query):
-        #         a_queries.append(a_query)
-    return a_queries
-
-def attributeStrategy(templates, ambiguities, pk, tableName, operators, mt, printConfig):
-    a_queries = []
-    for template, type in templates:
-        if type != TYPE_ATTRIBUTE:
-            continue
-        for operator in operators:
-            for a1, a2, label in ambiguities:
-                if checkOperatorWithType(a1, operator) == False:
-                    continue
-                a_query = template
-                a_query = a_query.replace('$PK$', ('"'+pk+'"'))
-                a_query = a_query.replace('$TABLE$', tableName)
-                a_query = a_query.replace('$OPERATOR$', operator)
-                a_query = a_query.replace('$AMB_1$', '"'+a1+'"')
-                a_query = a_query.replace('$AMB_2$', '"'+a2+'"')
-                printf_string = printf(operator, label, printConfig).strip()
-                if mt == 'contradicting':
-                    a_query = a_query.replace('$MT_OPERATOR$', negOperator(operator))
-                else:
-                    a_query = a_query.replace('$MT_OPERATOR$', operator)
-                a_query = a_query.replace('$PRINT_F$', "' " + printf_string + " '")
-                if checkAQueryComplete(a_query):
-                    a_queries.append(a_query)
-    return a_queries
-
 def attributeStrategyTemplate(template, ambiguities, pk,tableName, operator, mt, printConfig):
     a_queries = []
     type = template[1]
@@ -124,7 +76,6 @@ def fullStrategyTemplate(template, ambiguities, ck,tableName, operator, mt, prin
         a_query = a_query_updated
         a_query = a_query.replace('$SUB_PK$', ('"' + subpk + '"'))
         a_query = replacePKs(a_query, ck, subpk)
-        #a_query = a_query.replace('$PK$', ('"'+pk+'"'))
         a_query = a_query.replace('$TABLE$', tableName)
         a_query = a_query.replace('$OPERATOR$', operator)
         a_query = a_query.replace('$AMB_1$', '"'+a1[0]+'"')
@@ -139,36 +90,6 @@ def fullStrategyTemplate(template, ambiguities, ck,tableName, operator, mt, prin
         a_query = a_query.replace('$PRINT_F$', "' "+printf_string+" '")
         if checkAQueryComplete(a_query):
             a_queries.append(a_query)
-    return a_queries
-
-def rowStrategy(templates, compositeKeys, tableName, attributes, operators, mt, printConfig):
-    a_queries = []
-    for template, type in templates:
-        if type != TYPE_ROW:
-            continue
-        for operator in operators:
-            listAttr = toListCompositeKeys(compositeKeys)
-            attrList = [x for x in attributes if x not in listAttr]
-            for ck in compositeKeys:
-                subpk = ck[0]
-                key = ck[1]
-                for a in attrList:
-                    if checkOperatorWithType(a, operator) == False:
-                        continue
-                    a_query = template
-                    a_query = a_query.replace('$SUB_PK$', ('"'+subpk+'"'))
-                    a_query = a_query.replace('$PK$', ('"' + key + '"'))
-                    a_query = a_query.replace('$A1$', ('"' + a + '"'))
-                    a_query = a_query.replace('$A1_NAME$', ("' " + a + "'"))
-                    a_query = a_query.replace('$TABLE$', tableName)
-                    printo_string = printo(operator, printConfig).strip()
-                    a_query = a_query.replace('$PRINT_O$', " ' " + printo_string + " '")
-                    if mt == 'contradicting':
-                        a_query = a_query.replace('$MT_OPERATOR$', negOperator(operator))
-                    else:
-                        a_query = a_query.replace('$MT_OPERATOR$', operator)
-                    if checkAQueryComplete(a_query):
-                        a_queries.append(a_query)
     return a_queries
 
 def rowStrategyTemplate(template, ck, tableName, attributes, operator, mt, printConfig):
@@ -186,11 +107,9 @@ def rowStrategyTemplate(template, ck, tableName, attributes, operator, mt, print
     for a in attrList:
         if checkOperatorWithType(a, operator) == False:
             continue
-        #a_query = template[0]
         a_query = a_query_updated
         a_query = a_query.replace('$SUB_PK$', ('"' + subpk + '"'))
         a_query = replacePKs(a_query, ck, subpk)
-        #a_query = a_query.replace('$PK$', ('"' + key + '"'))
         a_query = a_query.replace('$A1$', ('"' + a[0] + '"'))
         a_query = a_query.replace('$A1_NAME$', ("' " + a[0] + "'"))
         a_query = a_query.replace('$TABLE$', tableName)
@@ -251,6 +170,9 @@ def checkWithData(a_query, type, connection, a_queries_with_data, stored_results
         t_stored = (a_query, type, results, template, fd)
         stored_results.append(t_stored)
 
+###################
+## MAIN ALGORITHM
+###################
 def find_a_queries(table, templates, matchType, connection,
                    operatorPrintConfigRow, operatorPrintConfigAttribute, operators=["=", ">", "<"], executeQuery=True,
                    limitQueryResults = -1, shuffleQuery = True):
@@ -311,89 +233,3 @@ def find_a_queries(table, templates, matchType, connection,
                             checkWithData(a_query, type, connection, a_queries_with_data, stored_results, template, None, limitQueryResults)
 
     return a_queries_with_data, stored_results
-
-
-def run(table, templates, matchType, connection):
-    ambiguities = table[0]
-    pk = table[1]
-    fds = table[2]
-    compositeKeys = table[3]
-    tableName = table[4]
-    attributes = table[5]
-    a_queries_with_data = []
-    if len(fds) > 0:
-        print("***********************")
-        print("FDS sentences and data")
-        print("***********************")
-        a_queries, to_totto_list = fdStrategy(templates,fds, pk, tableName)
-        for aq in a_queries:
-            results = executeQueryBatch(aq, connection)
-            if len(results) > 0:
-                a_queries_with_data.append(aq)
-        for l in to_totto_list:
-            count = 0
-            for sentence, data in l:
-                distinctSentences.add(sentence)
-                #print("SENTENCE: ", sentence)
-                #for row in data:
-                #    print("ROW:", row)
-                #print("**********************")
-                example = to_totto_input(tableName, tableName, data, sentence)
-                count += 1
-                if (maxSentencesPerType != -1) and count > maxSentencesPerType:
-                    break
-                dataset.append(example)
-    if len(compositeKeys) > 0:
-        ## implement for CK
-        a_queries = rowStrategy(templates, table, compositeKeys, tableName,attributes,operators, matchType, ['has', 'has more than', 'has less than'])
-        to_tottos = []
-        for aq in a_queries:
-            results = executeQueryBatch(aq, connection)
-            if len(results) > 0:
-                columnsQuery = getColumnsName(aq, connection)
-                a_queries_with_data.append(aq)
-                to_totto = to_totto_row(results, columnsQuery)
-                to_tottos.append(to_totto)
-        print("***********************")
-        print("ROW sentences and data")
-        print("***********************")
-        for to_totto in to_tottos:
-            count = 0
-            for sentence, data in to_totto:
-                distinctSentences.add(sentence)
-                #print("SENTENCE: ", sentence)
-                #for row in data:
-                #    print("ROW:", row)
-                #print("**********************")
-                example = to_totto_input(tableName, tableName, data, sentence)
-                count += 1
-                if (maxSentencesPerType != -1) and count > maxSentencesPerType:
-                    break
-                dataset.append(example)
-    if len(ambiguities) > 0:
-        a_queries = attributeStrategy(templates, table, ambiguities, pk, tableName, operators, matchType, [('has the same', 'as'), ('has higher', 'than'), ('has lower', 'than')])
-        to_tottos = []
-        for aq in a_queries:
-            results = executeQueryBatch(aq, connection)
-            if len(results) > 0:
-                columnsQuery = getColumnsName(aq, connection)
-                a_queries_with_data.append(aq)
-                to_totto = to_totto_attribute(results,columnsQuery)
-                to_tottos.append(to_totto)
-        print("*****************************")
-        print("ATTRIBUTE sentences and data")
-        print("****************************")
-        for to_totto in to_tottos:
-            count = 0
-            for sentence, data in to_totto:
-                distinctSentences.add(sentence)
-                #print("SENTENCE: ", sentence)
-                #for row in data:
-                #    print("ROW:", row)
-                #print("**********************")
-                example = to_totto_input(tableName, tableName, data, sentence)
-                count += 1
-                if (maxSentencesPerType != -1) and count > maxSentencesPerType:
-                    break
-                dataset.append(example)
-
