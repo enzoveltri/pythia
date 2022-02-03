@@ -5,6 +5,11 @@ def getDBConnection(user_uenc, pw_uenc, host, port, dbname) :
     connection = psycopg2.connect(user = user_uenc, password = pw_uenc, host = host, port = port, database = dbname)
     return connection
 
+def getEngine(username, password, address, port, dbName):
+    connectionString = "postgresql://"+str(username) +":"+ str(password) + "@"+str(address) + ":" + str(port) +"/" + str(dbName)
+    engine = create_engine(connectionString)
+    return engine
+
 # def executeQuery (query):
 #     results = [];
 #     try:
