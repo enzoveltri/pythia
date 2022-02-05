@@ -32,8 +32,9 @@ def executeQueryBatch (query, connection):
         cursor.execute(query)
         results = cursor.fetchall()
     except (Exception, psycopg2.Error) as error :
-        print(query)
-        print ("Error while connecting to PostgreSQL", error)
+        #print(query)
+        #print ("Error while connecting to PostgreSQL", error)
+        connection.rollback()
     return results
 
 def getColumnsName(query, connection):

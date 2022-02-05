@@ -36,3 +36,10 @@ def printo(operator, values):
     if operator == '<>':
         return values[3] + " "
     print("*** ERROR in printf:", operator, values)
+
+def prinfFunction(function, values):
+    if function == "max":
+        return values[0] + " "
+    if function == "min":
+        return values[1] + " "
+    print("*** ERROR in prinfFunction:", function, values)
