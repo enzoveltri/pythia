@@ -42,4 +42,8 @@ def prinfFunction(function, values):
         return values[0] + " "
     if function == "min":
         return values[1] + " "
+    if function == "<":
+        return values[2] + " "
+    if function == ">":
+        return values[3] + " "
     print("*** ERROR in prinfFunction:", function, values)

@@ -99,7 +99,9 @@ def fullStrategyTemplate(template, ambiguities, ck,tableName, operator, mt, prin
         printf_string = printf(operator, label, printConfig).strip()
         if mt == MATCH_TYPE_CONTRADICTING:
             a_query = a_query.replace('$MT_OPERATOR$', negOperator(operator))
+            a_query = a_query.replace("$B_TABLE$", "b1")
         else:
+            a_query = a_query.replace("$B_TABLE$", "b2")
             a_query = a_query.replace('$MT_OPERATOR$', operator)
             if mt == MATCH_TYPE_UNIFORM_FALSE:
                 printf_string = printf(negOperator(operator), label, printConfig).strip()
@@ -167,10 +169,14 @@ def funcStrategyTemplate(template, ck, tableName, attributes, func, mt, printCon
         a_query = a_query.replace('$FUNC$', func)
         printo_string = prinfFunction(func, printConfig).strip()
         if mt == MATCH_TYPE_CONTRADICTING:
-            a_query = a_query.replace('$MT_FUNC$', negFunctions(func))
+            a_query = a_query.replace('$OP_FUNC$', "=")
+            a_query = a_query.replace('$MT_OP_FUNC$', negOperator("="))
         else:
-            a_query = a_query.replace('$MT_FUNC$', func) ## uniform_true
+            a_query = a_query.replace('$OP_FUNC$', "=") ## uniform_true
+            a_query = a_query.replace('$MT_OP_FUNC$', "=")  ## uniform_true
             if mt == MATCH_TYPE_UNIFORM_FALSE:
+                a_query = a_query.replace('$OP_FUNC$', negFunctions(func))  ## uniform_true
+                a_query = a_query.replace('$MT_OP_FUNC$', negFunctions(func))  ## uniform_true
                 printo_string = prinfFunction(negFunctions(func), printConfig).strip()
         a_query = a_query.replace('$PRINT_FUNC$', " ' " + printo_string + " '")
         #print("*****", a_query)
@@ -302,6 +308,7 @@ def find_a_queries(dataset, templates, matchType, connection,
                         if (a_query is not None and executeQuery):
                             if shuffleQuery:
                                 a_query += " ORDER BY random()"
+                            print(a_query)
                             checkWithData(a_query, type, connection, a_queries_with_data, stored_results, template, None,
                                           limitQueryResults)
         if (type == TYPE_ROW) and (len(compositeKeys) > 0):

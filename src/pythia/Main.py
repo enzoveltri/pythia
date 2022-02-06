@@ -1,6 +1,6 @@
 import pandas as pd
 
-from src.pythia.Constants import STRATEGY_SCHEMA, TYPE_ROW, TYPE_ATTRIBUTE, TYPE_FULL, MATCH_TYPE_CONTRADICTING, TYPE_FD, TYPE_FUNC
+from src.pythia.Constants import STRATEGY_SCHEMA, TYPE_ROW, TYPE_ATTRIBUTE, TYPE_FULL, TYPE_FD, TYPE_FUNC, MATCH_TYPE_CONTRADICTING, MATCH_TYPE_UNIFORM_TRUE, MATCH_TYPE_UNIFORM_FALSE
 from src.pythia.DBUtils import getDBConnection
 from src.pythia.Dataset import Dataset
 from itertools import combinations, permutations
@@ -53,7 +53,7 @@ if __name__ == '__main__':
     print(fdTemplates)
     print(funcTemplates)
     connection = getDBConnection(user_uenc, pw_uenc, host, port, dbname)
-    a_queries, a_queries_with_data = find_a_queries(d1, fullTemplates, MATCH_TYPE_CONTRADICTING, connection,
+    a_queries, a_queries_with_data = find_a_queries(d1, funcTemplates, MATCH_TYPE_CONTRADICTING, connection,
                    operators=["=", ">", "<"], functions=["min", "max"], executeQuery=True, limitQueryResults=10, shuffleQuery=True)
     print("Total A-Queries Generated:", len(a_queries))
     print("Differents A-Queries: ", len(set(a_queries)))
