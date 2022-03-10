@@ -1,4 +1,6 @@
 import pandas
+import uuid
+import os
 from itertools import chain, combinations
 from functools import cmp_to_key
 from pandas.core.dtypes.common import is_numeric_dtype
@@ -7,7 +9,7 @@ from src.pythia.T5EngineMock import T5EngineMock
 from src.pythia.Tane import getTaneFDs
 from src.pythia.Constants import STRATEGY_SCHEMA, STRATEGY_SCHEMA_WITH_DATA_SAMPLE, STRATEGY_PAIRWISE_COMBINATION, STRATEGY_PAIRWISE_PERMUTATION
 
-t5Engine = T5EngineMock()  ## TODO: in the web app this shuold be a singleton
+t5Engine = T5EngineMock()  ## TODO: in the web app this should be a singleton
 
 def _key_options(items, dtypes, useNumerical=False):
     if useNumerical == False:
@@ -55,8 +57,7 @@ def _notIn(candidate, listOfCandidates):
             return False
     return True
 
-def getCompositeKeys(file, maxSizeKey):
-    df = pandas.read_csv(file)
+def getCompositeKeys(df, maxSizeKey):
     dtypes = df.infer_objects().dtypes
     candidates = []
     # iterate over all combos of headings, excluding ID for brevity
@@ -85,8 +86,13 @@ def getCompositeKeys(file, maxSizeKey):
             sortedMinimal.append(candidate)
     return sortedMinimal
 
-def getFDs(file, attributes):
+def getCompositeKeysFromFile(file, maxSizeKey):
     df = pandas.read_csv(file)
+    return getCompositeKeys(df, maxSizeKey)
+
+def getFDs(df, attributes, dropFile, tempFolder = "./taneFolder/"):
+    if not os.path.exists(tempFolder):
+        os.makedirs(tempFolder)
     dtypes = df.infer_objects().dtypes
     columnToDrop = []
     for attrName, attrType in dtypes.items():
@@ -94,7 +100,8 @@ def getFDs(file, attributes):
             columnToDrop.append(attrName)
     dfExport = df.copy()
     dfExport = dfExport.drop(columns=columnToDrop)
-    fileExport = file + "_tanefd"
+    fileName = uuid.uuid4().hex
+    fileExport = tempFolder + fileName + "_tanefd"
     dfExport.to_csv(fileExport, index=False)
     #taneFDs = getTaneFDs(file)
     taneFDs = getTaneFDs(fileExport)
@@ -119,10 +126,18 @@ def getFDs(file, attributes):
                 isNone = True
         if not isNone:
             fds.append(fd)
+    if dropFile:
+        if os.path.exists(fileExport):
+            os.remove(fileExport)
     return fds
 
-def getAmbiguousAttribute(prefix, attribute1, attribute2, strategy):
-    requestString = prefix + " attr1: " + attribute1[0] + " attr2: " + attribute2[0]
+def getFDsFromFile(file, attributes):
+    df = pandas.read_csv(file)
+    return getFDs(df, attributes, file)
+
+def getAmbiguousAttribute(prefix, attribute1, attribute2, strategy, t5Engine):
+    #requestString = prefix + " attr1: " + attribute1[0] + " attr2: " + attribute2[0]
+    requestString = prefix + " attr1: " + attribute1.name + " attr2: " + attribute2.name
     label = None
     if (strategy == STRATEGY_SCHEMA):
         ## TODO: request to the deployed task1

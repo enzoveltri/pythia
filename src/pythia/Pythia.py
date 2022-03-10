@@ -5,11 +5,10 @@ from StringUtils import findTokens
 from src.pythia.Constants import INDEX
 ## UTILS FUCTIONS
 
-def toListCompositeKeys(compositeKeys):
+def toListCompositeKeys(compositeKey):
     tmpSet = set()
-    for ck in compositeKeys:
-        for a in ck:
-            tmpSet.add(a)
+    for attr in compositeKey:
+        tmpSet.add(attr)
     return list(tmpSet)
 
 def checkAQueryComplete(a_query):
@@ -37,11 +36,11 @@ def negFunctions(function):
     print("**** KEY ERROR: ", function)
     return None
 
-def checkOperatorWithType(attribute1, attribute2, operator):
-    type1 = attribute1[1]
+def checkOperatorWithType(attribute1, attribute2, operator, attributesTypes):
+    type1 = attributesTypes[attribute1]
     type2 = None
     if (attribute2 is not None):
-        type2 = attribute2[1]
+        type2 = attributesTypes[attribute2]
     if (type2 is not None) and (type1 != type2):
         return False
     if type1 == CATEGORICAL and \
@@ -50,21 +49,21 @@ def checkOperatorWithType(attribute1, attribute2, operator):
         return False
     return True
 
-def attributeStrategyTemplate(template, ambiguities, pk,tableName, operator, mt, printConfig):
+def attributeStrategyTemplate(template, ambiguities, pk,tableName, operator, mt, printConfig, attributesTypes):
     a_queries = []
     type = template[1]
     if type != TYPE_ATTRIBUTE:
         print("*** ERROR. Not an ATTRIBUTE template ", template)
         return None
     for a1, a2, label in ambiguities:
-        if checkOperatorWithType(a1, a2, operator) == False:
+        if checkOperatorWithType(a1, a2, operator, attributesTypes) == False:
             continue
         a_query = template[0]
-        a_query = a_query.replace('$PK$', ('"'+pk[0]+'"'))
+        a_query = a_query.replace('$PK$', ('"' + pk + '"'))
         a_query = a_query.replace('$TABLE$', tableName)
         a_query = a_query.replace('$OPERATOR$', operator)
-        a_query = a_query.replace('$AMB_1$', '"'+a1[0]+'"')
-        a_query = a_query.replace('$AMB_2$', '"'+a2[0]+'"')
+        a_query = a_query.replace('$AMB_1$', '"' + a1 + '"')
+        a_query = a_query.replace('$AMB_2$', '"' + a2 + '"')
         printf_string = printf(operator, label, printConfig).strip()
         if mt == MATCH_TYPE_CONTRADICTING:
             a_query = a_query.replace('$MT_OPERATOR$', negOperator(operator))
@@ -77,7 +76,7 @@ def attributeStrategyTemplate(template, ambiguities, pk,tableName, operator, mt,
             a_queries.append(a_query)
     return a_queries
 
-def fullStrategyTemplate(template, ambiguities, ck,tableName, operator, mt, printConfig):
+def fullStrategyTemplate(template, ambiguities, ck,tableName, operator, mt, printConfig, attributesTypes):
     a_queries = []
     type = template[1]
     if type != TYPE_FULL:
@@ -87,15 +86,15 @@ def fullStrategyTemplate(template, ambiguities, ck,tableName, operator, mt, prin
     a_query_original = template[0]
     a_query_updated = updatePKsFromCk(a_query_original, ck)
     for a1, a2, label in ambiguities:
-        if checkOperatorWithType(a1, a2, operator) == False:
+        if checkOperatorWithType(a1, a2, operator, attributesTypes) == False:
             continue
         a_query = a_query_updated
         a_query = a_query.replace('$SUB_PK$', ('"' + subpk + '"'))
         a_query = replacePKs(a_query, ck, subpk)
         a_query = a_query.replace('$TABLE$', tableName)
         a_query = a_query.replace('$OPERATOR$', operator)
-        a_query = a_query.replace('$AMB_1$', '"'+a1[0]+'"')
-        a_query = a_query.replace('$AMB_2$', '"'+a2[0]+'"')
+        a_query = a_query.replace('$AMB_1$', '"' + a1 + '"')
+        a_query = a_query.replace('$AMB_2$', '"' + a2 + '"')
         printf_string = printf(operator, label, printConfig).strip()
         if mt == MATCH_TYPE_CONTRADICTING:
             a_query = a_query.replace('$MT_OPERATOR$', negOperator(operator))
@@ -110,7 +109,7 @@ def fullStrategyTemplate(template, ambiguities, ck,tableName, operator, mt, prin
             a_queries.append(a_query)
     return a_queries
 
-def rowStrategyTemplate(template, ck, tableName, attributes, operator, mt, printConfig):
+def rowStrategyTemplate(template, ck, tableName, attributes,attributesTypes, operator, mt, printConfig):
     type = template[1]
     if type != TYPE_ROW:
         print("*** ERROR. Not a ROW template ", template)
@@ -118,19 +117,18 @@ def rowStrategyTemplate(template, ck, tableName, attributes, operator, mt, print
     a_queries = []
     listAttr = toListCompositeKeys(ck)
     attrList = [x for x in attributes if x not in listAttr]
-    if (INDEX[0], CATEGORICAL) in attrList: attrList.remove((INDEX[0], CATEGORICAL))
+    if INDEX.normalizedName in attrList: attrList.remove(INDEX.normalizedName)
     subpk = ck[0]
     a_query_original = template[0]
     a_query_updated = updatePKsFromCk(a_query_original, ck)
-    #key = ck[1]
     for a in attrList:
-        if checkOperatorWithType(a, None, operator) == False:
+        if checkOperatorWithType(a, None, operator, attributesTypes) == False:
             continue
         a_query = a_query_updated
         a_query = a_query.replace('$SUB_PK$', ('"' + subpk + '"'))
         a_query = replacePKs(a_query, ck, subpk)
-        a_query = a_query.replace('$A1$', ('"' + a[0] + '"'))
-        a_query = a_query.replace('$A1_NAME$', ("' " + a[0] + "'"))
+        a_query = a_query.replace('$A1$', ('"' + a + '"'))
+        a_query = a_query.replace('$A1_NAME$', ("' " + a + "'"))
         a_query = a_query.replace('$TABLE$', tableName)
         printo_string = printo(operator, printConfig).strip()
         if mt == MATCH_TYPE_CONTRADICTING:
@@ -144,7 +142,7 @@ def rowStrategyTemplate(template, ck, tableName, attributes, operator, mt, print
             a_queries.append(a_query)
     return a_queries
 
-def funcStrategyTemplate(template, ck, tableName, attributes, func, mt, printConfig):
+def funcStrategyTemplate(template, ck, tableName, attributes, attributesTypes, func, mt, printConfig):
     type = template[1]
     if type != TYPE_FUNC:
         print("*** ERROR. Not a FUNC template ", template)
@@ -152,19 +150,19 @@ def funcStrategyTemplate(template, ck, tableName, attributes, func, mt, printCon
     a_queries = []
     listAttr = toListCompositeKeys(ck)
     attrList = [x for x in attributes if x not in listAttr]
-    if (INDEX[0], CATEGORICAL) in attrList: attrList.remove((INDEX[0], CATEGORICAL))
+    if INDEX.normalizedName in attrList: attrList.remove(INDEX.normalizedName)
     subpk = ck[0]
     a_query_original = template[0]
     a_query_updated = updatePKsFromCk(a_query_original, ck)
     #key = ck[1]
     for a in attrList:
-        if checkOperatorWithType(a, None, func) == False:
+        if checkOperatorWithType(a, None, func, attributesTypes) == False:
             continue
         a_query = a_query_updated
         a_query = a_query.replace('$SUB_PK$', ('"' + subpk + '"'))
         a_query = replacePKs(a_query, ck, subpk)
-        a_query = a_query.replace('$A1$', ('"' + a[0] + '"'))
-        a_query = a_query.replace('$A1_NAME$', ("' " + a[0] + "'"))
+        a_query = a_query.replace('$A1$', ('"' + a + '"'))
+        a_query = a_query.replace('$A1_NAME$', ("' " + a + "'"))
         a_query = a_query.replace('$TABLE$', tableName)
         a_query = a_query.replace('$FUNC$', func)
         printo_string = prinfFunction(func, printConfig).strip()
@@ -179,7 +177,6 @@ def funcStrategyTemplate(template, ck, tableName, attributes, func, mt, printCon
                 a_query = a_query.replace('$MT_OP_FUNC$', negFunctions(func))  ## uniform_true
                 printo_string = prinfFunction(negFunctions(func), printConfig).strip()
         a_query = a_query.replace('$PRINT_FUNC$', " ' " + printo_string + " '")
-        #print("*****", a_query)
         if checkAQueryComplete(a_query):
             a_queries.append(a_query)
     return a_queries
@@ -210,7 +207,6 @@ def updateLHSFromLKS(a_query_original, lhs):
             newTokens.append(new_token)
         a_query = a_query.replace(token, ' , '.join(newTokens), 1)
     tokensReplace = findTokens(a_query, "$LHS$")
-    #a_query = a_query_original
     for token in tokensReplace:
         newTokens = []
         for lhs_attr in range(0, len(lhs)):
@@ -228,9 +224,6 @@ def fdStrategyTemplate(template, fd, pk, tableName):
     values = fd[1]
     lhs = fdNormalForm[:-1]
     rhs = fdNormalForm[-1]
-    #lhs = fd[0]
-    #rhs = fd[1]
-    #values = fd[2]
     a_query_original = template[0]
     a_query = updateLHSFromLKS(a_query_original, lhs)
     attrNum = 0
@@ -241,10 +234,8 @@ def fdStrategyTemplate(template, fd, pk, tableName):
     for attr in lhs:
         a_query = a_query.replace('$LHS_'+ str(attrNum)+'$',('"' + attr + '"'))
         attrNum+=1
-    #a_query = a_query.replace('$LHS_NAME$', ("' " + lhs + "'"))
-    #a_query = a_query.replace('$LHS$', ('"' + lhs + '"'))
     a_query = a_query.replace('$RHS$', ('"' + rhs + '"'))
-    a_query = a_query.replace('$PK$', ('"' + pk[0] + '"'))
+    a_query = a_query.replace('$PK$', ('"' + pk + '"'))
     a_query = a_query.replace('$TABLE$', tableName)
     for value in values:
         a_query = a_query.replace('$PRINT_FD$', "' " + value + " '", 1)
@@ -265,25 +256,19 @@ def checkWithData(a_query, type, connection, a_queries_with_data, stored_results
 ## MAIN ALGORITHM
 ###################
 ## TODO: change to make the algorithm (see T.R. alg 2) robust wrt any Template given a predefined syntax
-#def find_a_queries(table, templates, matchType, connection,
 def find_a_queries(dataset, templates, matchType, connection,
-                   #operatorPrintConfigRow, operatorPrintConfigAttribute, operators=["=", ">", "<"], executeQuery=True,
                    operators=["=", ">", "<"], functions=["max", "min"], executeQuery=True,
                    limitQueryResults = -1, shuffleQuery = True):
-    ## collect metainformation from table
-    ##ambiguities = table[0]
-    ##pk = table[1]
-    ##fds = table[2]
-    ##compositeKeys = table[3]
-    ##tableName = table[4]
-    ##attributes = table[5]
-    ## collect metainformation from dataset
     ambiguities = dataset.getAmbiguousAttributeNormalized()
-    pk = dataset.getPk()
+    pk = dataset.getPk().normalizedName
     fds = dataset.getNormalizedFDs()
     compositeKeys = dataset.getNormalizedCompositeKeys()
     tableName = dataset.getDatasetName()
     attributes = dataset.getNormalizedAttributes()
+    attributesWithType = dataset.getAttributes()
+    attributesTypes = dict()
+    for attr in attributesWithType:
+        attributesTypes[attr.normalizedName] = attr.type
     a_queries_with_data = []
     stored_results = [] ## list of <a_query, type, result, template>
     for template in templates:
@@ -293,7 +278,6 @@ def find_a_queries(dataset, templates, matchType, connection,
             print("*** GENERATING A-QUERIES for FDS")
             for fd in fds:
                 a_query = fdStrategyTemplate(template, fd, pk, tableName)
-                #print(a_query)
                 if (a_query is not None and executeQuery):
                     if shuffleQuery:
                         a_query += " ORDER BY random()"
@@ -302,9 +286,8 @@ def find_a_queries(dataset, templates, matchType, connection,
             print("*** GENERATING A-QUERIES for FUNCs")
             for ck in compositeKeys:
                 for func in functions:
-                    a_queries = funcStrategyTemplate(template, ck, tableName, attributes, func, matchType, print_f)
+                    a_queries = funcStrategyTemplate(template, ck, tableName, attributes, attributesTypes, func, matchType, print_f)
                     for a_query in a_queries:
-                        # print(a_query)
                         if (a_query is not None and executeQuery):
                             if shuffleQuery:
                                 a_query += " ORDER BY random()"
@@ -315,10 +298,8 @@ def find_a_queries(dataset, templates, matchType, connection,
             print("*** GENERATING A-QUERIES for ROWs")
             for ck in compositeKeys:
                 for operator in operators:
-                    #a_queries = rowStrategyTemplate(template, ck, tableName, attributes, operator, matchType, operatorPrintConfigRow)
-                    a_queries = rowStrategyTemplate(template, ck, tableName, attributes, operator, matchType, print_f)
+                    a_queries = rowStrategyTemplate(template, ck, tableName, attributes, attributesTypes, operator, matchType, print_f)
                     for a_query in a_queries:
-                        #print(a_query)
                         if (a_query is not None and executeQuery):
                             if shuffleQuery:
                                 a_query += " ORDER BY random()"
@@ -326,10 +307,8 @@ def find_a_queries(dataset, templates, matchType, connection,
         if (type == TYPE_ATTRIBUTE) and (len(ambiguities) > 0):
             print("*** GENERATING A-QUERIES for ATTRIBUTEs")
             for operator in operators:
-                #a_queries = attributeStrategyTemplate(template, ambiguities, pk, tableName, operator, matchType, operatorPrintConfigAttribute)
-                a_queries = attributeStrategyTemplate(template, ambiguities, pk, tableName, operator, matchType, print_f)
+                a_queries = attributeStrategyTemplate(template, ambiguities, pk, tableName, operator, matchType, print_f, attributesTypes)
                 for a_query in a_queries:
-                    #print(a_query)
                     if (a_query is not None and executeQuery):
                         if shuffleQuery:
                             a_query += " ORDER BY random()"
@@ -339,10 +318,8 @@ def find_a_queries(dataset, templates, matchType, connection,
             for ck in compositeKeys:
                 subpk = ck[0]
                 for operator in operators:
-                    #a_queries = fullStrategyTemplate(template, ambiguities, ck, tableName, operator, matchType, operatorPrintConfigAttribute)
-                    a_queries = fullStrategyTemplate(template, ambiguities, ck, tableName, operator, matchType, print_f)
+                    a_queries = fullStrategyTemplate(template, ambiguities, ck, tableName, operator, matchType, print_f, attributesTypes)
                     for a_query in a_queries:
-                        #print(a_query)
                         if (a_query is not None and executeQuery):
                             if shuffleQuery:
                                 a_query += " ORDER BY random()"

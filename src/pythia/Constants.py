@@ -1,3 +1,4 @@
+from src.pythia.Attribute import Attribute
 ## ATTRIBUTE TYPE
 NUMERICAL = "numerical"
 CATEGORICAL = "categorical"
@@ -10,7 +11,9 @@ TYPE_FD = 'fd'
 TYPE_FUNC = 'func'
 
 ## PANDAS INDEX
-INDEX = ['index']
+#INDEX = ['index']
+INDEX = Attribute("index")
+INDEX.type = NUMERICAL
 
 ## STRATEGIES AMBIGUITY ATTRIBUTES
 STRATEGY_SCHEMA = "schema"
