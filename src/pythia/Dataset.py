@@ -11,25 +11,6 @@ from itertools import combinations, permutations
 
 class Dataset:
 
-    # def __init__(self, file, name, maxSizeKeys, ckMinimal, rowMeaning):
-    #     self.datasetName= name
-    #     self.file = file
-    #     self.compositeKeys = getCompositeKeys(file, maxSizeKeys)
-    #     if ckMinimal and len(self.compositeKeys) > 0:
-    #         self.compositeKeys = [self.compositeKeys[0]]
-    #     self.pk = self._getPk()
-    #     self._updateCKs()
-    #     self.attributes = self._getAttributes(file)
-    #     self._pruneCKsByType()
-    #     #self._pruneCKsByType(True) ## to keep numerical attr
-    #     self.fds = self._getFDs(file)
-    #     self.normalizedAttributes = self._normalize(self.attributes)
-    #     self.normalizedCompositeKeys = self._normalizeNames(self.compositeKeys)
-    #     self.normalizedFDs = self._normalizeNames(self.fds)
-    #     self.normalizedFDs = self._extendFDs(self.normalizedFDs, rowMeaning)
-    #     self.mappigsAttributes = self._getDictionaryAttributes()
-    #     self.dataframe = self._loadDataFrame(file)
-
     def __init__(self, file, name):
         self.datasetName= name
         self.file = file
@@ -42,7 +23,6 @@ class Dataset:
         self.ambiguousAttribute = []
 
     def findCompositeKeys(self, maxSizeKeys, ckMinimal):
-        #compositeKeysName = getCompositeKeys(self.file, maxSizeKeys)
         return self.findCompositeKeys(self, self.dataframe, maxSizeKeys, ckMinimal)
 
     def findCompositeKeys(self, dataframe, maxSizeKeys, ckMinimal):
@@ -169,17 +149,9 @@ class Dataset:
                 label = getAmbiguousAttribute(schemaWithData, attr1, attr2, strategy, t5Engine)
                 if label is not None:
                     self.ambiguousAttribute.append((attr1, attr2, label))
-        # self.ambiguousAttributeNormalized = []
-        # for attr1, attr2, label in self.ambiguousAttribute:
-        #     normalizedName1 = self.mappigsAttributes[attr1[0]]
-        #     normalizedName2 = self.mappigsAttributes[attr2[0]]
-        #     attr1Norm = (normalizedName1, attr1[1])
-        #     attr2Norm = (normalizedName2, attr2[1])
-        #     self.ambiguousAttributeNormalized.append((attr1Norm, attr2Norm, label))
 
     def storeInDB(self, user_uenc, pw_uenc, host, port, dbname, if_exists='replace'):
         ## if_exists {'fail', 'replace', 'append'}
-        #connection = getDBConnection(user_uenc, pw_uenc, host, port, dbname)
         engine = getEngine(user_uenc, pw_uenc, host, port, dbname)
         self.dataframe.to_sql(self.datasetName, engine, if_exists=if_exists)
         dataframeRows = self.dataframe.shape[0]
@@ -191,28 +163,6 @@ class Dataset:
         for attr in self.attributes:
             mappings[attr.name] = attr
         return mappings
-
-    def _getPk(self):
-        for ck in self.compositeKeys:
-            if (len(ck) == 1):
-                return ck
-        return INDEX
-
-    def _updateCKs(self):
-        if (self.pk in self.compositeKeys):
-            self.compositeKeys.remove(self.pk)
-
-    # def _getAttributesFromDF(self, df):
-    #     dtypes = df.infer_objects().dtypes
-    #     attributes = []
-    #     if self.pk == INDEX:
-    #         attributes.append((INDEX[0], CATEGORICAL))
-    #     for attrName, attrType in dtypes.items():
-    #         type = CATEGORICAL
-    #         if is_numeric_dtype(attrType):
-    #             type = NUMERICAL
-    #         attributes.append((attrName, type))
-    #     return attributes
 
     def _getAttributesFromDF(self, df):
         dtypes = df.infer_objects().dtypes
@@ -239,29 +189,6 @@ class Dataset:
             attributes.append((attrName, type))
         return attributes
 
-    def _normalize(self, attrList):
-        normalized = []
-        for attrName, type in attrList:
-            attrName = normalizeString(attrName, "_")
-            newAttribute = (attrName, type)
-            normalized.append(newAttribute)
-        return normalized
-
-    def _normalizeNames(self, listOfList):
-        listOfListNormalized = []
-        if listOfList is None:
-            return listOfListNormalized
-        for list in listOfList:
-            listNormalized = []
-            for name in list:
-                listNormalized.append(normalizeString(name, "_"))
-            listOfListNormalized.append(listNormalized)
-        return listOfListNormalized
-
-    def _getFDs(self, file):
-        fds = getFDs(file, self.attributes)
-        return fds
-
     def _normalizeList(self, listOfList):
         normalizedNames = []
         for list in listOfList:
@@ -271,53 +198,11 @@ class Dataset:
             normalizedNames.append(normalized)
         return normalizedNames
 
-    # def _loadDataFrame(self, file):
-    #     df = pd.read_csv(file)
-    #     normalizedColumns = []
-    #     for colName, type in self.normalizedAttributes:
-    #         if colName != INDEX[0]:
-    #             normalizedColumns.append(colName)
-    #     df.columns = normalizedColumns
-    #     return df
-
     def _loadDataFrame(self, file):
-        df = pd.read_csv(file)
+        reader = pd.read_csv(file, sep=None, iterator=True, engine='python')
+        inferred_sep = reader._engine.data.dialect.delimiter
+        df = pd.read_csv(file, sep=inferred_sep)
         return df
-
-    def _getDictionaryAttributes(self):
-        mappings = {}
-        for attr, attrNorm in zip(self.attributes, self.normalizedAttributes):
-            mappings[attr[0]] = attrNorm[0]
-        return mappings
-
-    def _pruneCKsByType(self, useNumerical=False):
-        if useNumerical == True:
-            return
-        attrType = {}
-        for attr, type in self.attributes:
-            attrType[attr] = type
-        compositeKeysCategorical = []
-        for ck in self.compositeKeys:
-            if (self._isCategorical(ck, attrType)):
-                compositeKeysCategorical.append(ck)
-        self.compositeKeys = compositeKeysCategorical
-
-    def _isCategorical(self, attrList, attrType):
-        for attr in attrList:
-            if (attrType[attr] != CATEGORICAL):
-                return False
-        return True
-
-    def _extendFDs(self, FDs, rowMeaning):
-        extendedFDs = []
-        for fd in FDs:
-            efd = (fd, rowMeaning)
-            extendedFDs.append(efd)
-        return extendedFDs
-
-    # def _linearizeSchema(self):
-    #     attributeNames = [attr[0] for attr in self.attributes]
-    #     return "|".join(attributeNames)
 
     def _linearizeSchema(self):
         attributeNames = [attr.name for attr in self.attributes]

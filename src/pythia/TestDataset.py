@@ -17,8 +17,12 @@ port = "5432"
 dbname = "ambiguities"
 
 if __name__ == '__main__':
-    file = "/Users/enzoveltri/Downloads/datasets/soccer.csv"
-    name = "soccer"
+    #file = "/Users/enzoveltri/Downloads/datasets/soccer.csv"
+    #file = "/Users/enzoveltri/Downloads/datasets/iris.csv"
+    file = "/Users/enzoveltri/Downloads/datasets/abalone.csv"
+    #name = "soccer"
+    name = "iris"
+    name = "abalone"
     #################################
     ## 1 load data into Dataset obj
     #################################
@@ -66,6 +70,7 @@ if __name__ == '__main__':
     if computeFDs:
         dataset.findFDs(df, True)
         fds = dataset.getFDs()
+        print("### FDs: ")
         for fd in fds:
             for attr in fd:
                 print(attr)
@@ -80,6 +85,7 @@ if __name__ == '__main__':
     strategy = STRATEGY_SCHEMA
     dataset.findAmbiguousAttributes(strategy, t5Engine)
     ambiguousAttributes = dataset.getAmbiguousAttribute()
+    print("### Ambiguous Pairs: ")
     for pair in ambiguousAttributes:
         print("Attr1: ", pair[0])
         print("Attr2: ", pair[1])
@@ -100,7 +106,7 @@ if __name__ == '__main__':
     #print(fdTemplates) ## OK TODO: need a way to write labels
     #print(funcTemplates) ## OK
     connection = getDBConnection(user_uenc, pw_uenc, host, port, dbname)
-    a_queries, a_queries_with_data = find_a_queries(dataset, funcTemplates, MATCH_TYPE_CONTRADICTING, connection,
+    a_queries, a_queries_with_data = find_a_queries(dataset, attributeTemplates, MATCH_TYPE_CONTRADICTING, connection,
                                                     operators=["=", ">", "<"], functions=["min", "max"],
                                                     executeQuery=True, limitQueryResults=10, shuffleQuery=True)
     print("Total A-Queries Generated:", len(a_queries))
