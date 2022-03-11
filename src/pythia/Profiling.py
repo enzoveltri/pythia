@@ -5,11 +5,13 @@ from itertools import chain, combinations
 from functools import cmp_to_key
 from pandas.core.dtypes.common import is_numeric_dtype
 from src.pythia.Constants import NUMERICAL
+from src.pythia.T5Engine import T5Engine
 from src.pythia.T5EngineMock import T5EngineMock
 from src.pythia.Tane import getTaneFDs
 from src.pythia.Constants import STRATEGY_SCHEMA, STRATEGY_SCHEMA_WITH_DATA_SAMPLE, STRATEGY_PAIRWISE_COMBINATION, STRATEGY_PAIRWISE_PERMUTATION
 
-t5Engine = T5EngineMock()  ## TODO: in the web app this should be a singleton
+#t5Engine = T5EngineMock()  ## TODO: in the web app this should be a singleton
+#t5Engine = T5Engine().getInstance()
 
 def _key_options(items, dtypes, useNumerical=False):
     if useNumerical == False:

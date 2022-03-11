@@ -1,26 +1,29 @@
+import json
+
 import pandas as pd
 from pandas.core.dtypes.common import is_numeric_dtype
 
 from src.pythia.Attribute import Attribute
-from src.pythia.Constants import STRATEGY_SCHEMA, STRATEGY_SCHEMA_WITH_DATA_SAMPLE, STRATEGY_PAIRWISE_COMBINATION, STRATEGY_PAIRWISE_PERMUTATION
-from src.pythia.DBUtils import getDBConnection, getEngine
+from src.pythia.Constants import STRATEGY_SCHEMA, STRATEGY_SCHEMA_WITH_DATA_SAMPLE, STRATEGY_PAIRWISE_COMBINATION, \
+    STRATEGY_PAIRWISE_PERMUTATION, CATEGORICAL, NUMERICAL, INDEX
 from src.pythia.Profiling import getCompositeKeys, getFDs, getAmbiguousAttribute
-from Constants import CATEGORICAL, NUMERICAL, INDEX
 from src.pythia.StringUtils import normalizeString
 from itertools import combinations, permutations
 
 class Dataset:
 
-    def __init__(self, file, name):
-        self.datasetName= name
-        self.file = file
-        self.dataframe = self._loadDataFrame(file)
+    def __init__(self, datasetName):
+        self.datasetName = datasetName
         self.pk = None
-        self.attributes = self._getAttributesFromDF(self.dataframe)
-        self.nameToAttribute = self._dictNameToAttribute()
         self.fds = []
         self.compositeKeys = []
         self.ambiguousAttribute = []
+
+    def initDataframe(self, file):
+        self.dataframe = self._loadDataFrame(file)
+        self.attributes = self._getAttributesFromDF(self.dataframe)
+        self.nameToAttribute = self._dictNameToAttribute()
+
 
     def findCompositeKeys(self, maxSizeKeys, ckMinimal):
         return self.findCompositeKeys(self, self.dataframe, maxSizeKeys, ckMinimal)
@@ -150,9 +153,8 @@ class Dataset:
                 if label is not None:
                     self.ambiguousAttribute.append((attr1, attr2, label))
 
-    def storeInDB(self, user_uenc, pw_uenc, host, port, dbname, if_exists='replace'):
+    def storeInDB(self, engine, if_exists='replace'):
         ## if_exists {'fail', 'replace', 'append'}
-        engine = getEngine(user_uenc, pw_uenc, host, port, dbname)
         self.dataframe.to_sql(self.datasetName, engine, if_exists=if_exists)
         dataframeRows = self.dataframe.shape[0]
         rowsInDB = engine.execute("SELECT count(*) from "+self.datasetName).fetchall()[0][0]
@@ -211,3 +213,8 @@ class Dataset:
     def _schemaWithDataSample(self):
         ## TODO: implement from task 3
         return ""
+
+    def toJSON(self):
+        delattr(self, "dataframe")
+        return json.dumps(self, default=lambda o: o.__dict__,  indent=4)
+

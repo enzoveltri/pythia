@@ -1,4 +1,5 @@
 from src.pythia.StringUtils import normalizeString
+import json
 
 class Attribute:
 
@@ -21,3 +22,7 @@ class Attribute:
 
     def __str__(self):
         return "Name: " + self.name + " Normalized: " + self.normalizedName + " Type: " + self.type
+
+    def toJSON(self):
+        return json.dumps(self, default=lambda o: o.__dict__,  indent=4)
+

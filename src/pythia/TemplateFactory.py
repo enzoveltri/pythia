@@ -1,3 +1,5 @@
+import json
+
 from src.pythia.Constants import TYPE_ATTRIBUTE, TYPE_ROW, TYPE_FULL, TYPE_FD, TYPE_FUNC
 
 ## TODO v2.0: define a grammar for templates
@@ -46,6 +48,11 @@ class TemplateFactory:
 
     def getTemplates(self):
         return self.templates
+
+
+    def templatesToJson(self):
+        return json.dumps(self.templates)
+
 
     def getTemplatesByType(self, type):
         templatesByType = []
