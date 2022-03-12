@@ -2,7 +2,7 @@ from fastapi import APIRouter, Form, HTTPException, Depends
 from starlette import status
 
 from src.pythia.Constants import ACCESS_TOKEN_EXPIRE_MINUTES
-from src.rest.Authentication import authenticate_user, create_access_token, get_current_active_user
+from src.pythia.Authentication import authenticate_user, create_access_token, get_current_active_user
 from datetime import timedelta
 
 from src.pythia.User import User
