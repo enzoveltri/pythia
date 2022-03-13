@@ -155,7 +155,12 @@ class Dataset:
 
     def storeInDB(self, engine, if_exists='replace'):
         ## if_exists {'fail', 'replace', 'append'}
-        self.dataframe.to_sql(self.datasetName, engine, if_exists=if_exists)
+        dfDB = self.dataframe.copy()
+        dictRename = dict()
+        for name, attr in self.nameToAttribute.items():
+            dictRename[name] = attr.normalizedName
+        dfDB.rename(columns=dictRename, inplace=True)
+        dfDB.to_sql(self.datasetName, engine, if_exists=if_exists)
         dataframeRows = self.dataframe.shape[0]
         rowsInDB = engine.execute("SELECT count(*) from "+self.datasetName).fetchall()[0][0]
         return dataframeRows == rowsInDB
