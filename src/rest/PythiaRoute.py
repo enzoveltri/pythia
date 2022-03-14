@@ -62,8 +62,8 @@ def uploadFile(file: UploadFile = Form(...), user: User = Depends(get_current_ac
 @pythiaroute.get("/dataframe/{name}")
 def getDataframe(name: str, user: User = Depends(get_current_active_user)):
     scenario = getScenarioFromDb(name)
-    ## TODO: return scenario.dataframe.head(10).to_html(classes='table table-striped table-bordered')
-    return scenario.dataframe.to_html(classes='table table-striped table-bordered')
+    ## TODO: manage pagination
+    return scenario.dataframe.iloc[0:10].to_html(classes='table table-striped table-bordered')
 
 
 @pythiaroute.delete("/delete/{name}")
