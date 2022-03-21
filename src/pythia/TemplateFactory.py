@@ -38,7 +38,7 @@ class TemplateFactory:
 
     def _initTemplates(self):
         self.templates = [
-            (attributeTemplate, TYPE_ATTRIBUTE, printConfigAttribute),
+            (attributeTemplate, TYPE_ATTRIBUTE, printConfigAttribute), ## TODO: Add name
             (rowTemplate, TYPE_ROW, printConfigRow),
             (fullTemplate, TYPE_FULL, printConfigAttribute),
             (fdTemplate, TYPE_FD, None),

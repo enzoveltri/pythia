@@ -56,7 +56,6 @@ class Dataset:
 
     def allCategorical(self, attributes):
         for attr in attributes:
-            print("*** attrs: ", attr.name)
             if attr.type != CATEGORICAL:
                 return False
         return True

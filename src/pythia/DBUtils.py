@@ -28,10 +28,11 @@ def getScenarioListFromDb(username):
 def getScenarioFromDb(name):
     connection = getDBConnection(DB_USER, DB_PASSWORD, DB_HOST, DB_PORT, DB_NAME)
     query = "select * from scenari where name='" + name + "';"
+    print("*** query: ", query)
     meta = executeQueryBatch(query, connection)
-    #dict = json.loads(meta[0][2])
+    # dict = json.loads(meta[0][2])
     dict = meta[0][2]
-    #dataset = Dataset(**json.loads(meta[0][2]))
+    # dataset = Dataset(**json.loads(meta[0][2]))
     datasetMunch = DefaultMunch.fromDict(dict, Dataset)
     dataset = Dataset(name)
     dataset.datasetName = datasetMunch.datasetName
@@ -41,7 +42,7 @@ def getScenarioFromDb(name):
     dataset.fds = datasetMunch.fds
     dataset.compositeKeys = datasetMunch.compositeKeys
     dataset.ambiguousAttribute = datasetMunch.ambiguousAttribute
-    query = getHeadersToQuery(dataset)
+    query = "select * from " + dataset.datasetName
     dataset.dataframe = pd.read_sql(query, connection)
     return dataset
 

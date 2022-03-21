@@ -113,7 +113,6 @@ def findFDs(name: str, user: User = Depends(get_current_active_user)):
     fds = scenario.getFDs()
     rowMeaning = ["has", "in"] ## TODO: parameter for the next function
     scenario.extendFDs(rowMeaning)
-    print("*** fds: ", scenario.toJSON())
     updateScenario(name, scenario)
     scenario = getScenarioFromDb(name)  ## TODO: remove issue with delattr in toJSON
     return scenario.toJSON()
