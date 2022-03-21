@@ -28,7 +28,6 @@ def getScenarioListFromDb(username):
 def getScenarioFromDb(name):
     connection = getDBConnection(DB_USER, DB_PASSWORD, DB_HOST, DB_PORT, DB_NAME)
     query = "select * from scenari where name='" + name + "';"
-    print("*** query: ", query)
     meta = executeQueryBatch(query, connection)
     #dict = json.loads(meta[0][2])
     dict = meta[0][2]
@@ -42,20 +41,22 @@ def getScenarioFromDb(name):
     dataset.fds = datasetMunch.fds
     dataset.compositeKeys = datasetMunch.compositeKeys
     dataset.ambiguousAttribute = datasetMunch.ambiguousAttribute
-    query = "select * from " + dataset.datasetName
+    query = getHeadersToQuery(dataset)
     dataset.dataframe = pd.read_sql(query, connection)
     return dataset
+
+def getHeadersToQuery(dataset):
+    attrs = []
+    for att in dataset.attributes:
+        attrs.append(att.normalizedName + ' as "' + att.name + ' (' + att.type[0:3] + ')"')
+    return "select " + ','.join(attrs) + " from " + dataset.datasetName
 
 
 def getTemplatesFromDb(name):
     connection = getDBConnection(DB_USER, DB_PASSWORD, DB_HOST, DB_PORT, DB_NAME)
     query = "select * from scenari where name='" + name + "';"
     meta = executeQueryBatch(query, connection)
-    templates = []
-    result = json.loads(meta[0][3])
-    for t in result:
-        templates.append((t['query'], t['name'], t['config']))
-    return templates
+    return meta[0][3]
 
 
 def getAmbiguousFromDb(name):
@@ -91,10 +92,11 @@ def insertScenario(name, username, dataset):
             connection.close()
 
 
-def updateScenario(name, dataset):
+def updateScenario(name, dataset, convertToJson = True):
     connection = getDBConnection(DB_USER, DB_PASSWORD, DB_HOST, DB_PORT, DB_NAME)
-    query = "UPDATE scenari set metadata='" + dataset.toJSON() + "' WHERE name='" + name + "';"
-    print(query)
+    if convertToJson:
+        dataset = dataset.toJSON()
+    query = "UPDATE scenari set metadata='" + dataset + "' WHERE name='" + name + "';"
     try:
         cur = connection.cursor()
         cur.execute(query)
@@ -148,7 +150,9 @@ def updateTemplates(name, templates):
 
 def deleteScenarioFromDb(name):
     connection = getDBConnection(DB_USER, DB_PASSWORD, DB_HOST, DB_PORT, DB_NAME)
-    query = "drop table " + name + "; drop table " + name + "_ambiguous; delete from scenari where name='" + name + "';"
+    query = "drop table " + name + "; "
+    #query += "drop table " + name + "_ambiguous; " TODO: to enable when this table creation is enabled
+    query += "delete from scenari where name='" + name + "'; "
     try:
         cur = connection.cursor()
         cur.execute(query)

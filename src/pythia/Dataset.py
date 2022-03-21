@@ -56,6 +56,7 @@ class Dataset:
 
     def allCategorical(self, attributes):
         for attr in attributes:
+            print("*** attrs: ", attr.name)
             if attr.type != CATEGORICAL:
                 return False
         return True
@@ -221,5 +222,5 @@ class Dataset:
 
     def toJSON(self):
         delattr(self, "dataframe")
-        return json.dumps(self, default=lambda o: o.__dict__,  indent=4)
+        return json.dumps(self, default=lambda o: o.__dict__, indent=4)
 

@@ -60,3 +60,11 @@ class TemplateFactory:
             if (templateType == type):
                 templatesByType.append((template, templateType, printF))
         return templatesByType
+
+
+def getTemplatesByType(templates, type):
+    templatesByType = []
+    for template, templateType, printF in templates:
+        if (templateType == type):
+            templatesByType.append((template, templateType, printF))
+    return templatesByType
