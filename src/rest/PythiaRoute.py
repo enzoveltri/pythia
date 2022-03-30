@@ -97,7 +97,6 @@ def findPrimaryKey(name: str, user: User = Depends(get_current_active_user)):
     scenario = getScenarioFromDb(name)
     scenario.findPK()
     updateScenario(name, scenario)
-    scenario = getScenarioFromDb(name) ## TODO: remove issue with delattr in toJSON
     return scenario.toJSON()
 
 @pythiaroute.get("/find/cks/{name}")
@@ -109,7 +108,6 @@ def findCompositeKeys(name: str, user: User = Depends(get_current_active_user)):
     scenario.findCompositeKeys(scenario.dataframe, maxSizeKeys, ckMinimal)
     scenario.pruneCKsByType(useNumerical)
     updateScenario(name, scenario)
-    scenario = getScenarioFromDb(name) ## TODO: remove issue with delattr in toJSON
     return scenario.toJSON()
 
 @pythiaroute.get("/find/fds/{name}")
@@ -120,7 +118,6 @@ def findFDs(name: str, user: User = Depends(get_current_active_user)):
     rowMeaning = ["has", "in"] ## TODO: parameter for the next function
     scenario.extendFDs(rowMeaning)
     updateScenario(name, scenario)
-    scenario = getScenarioFromDb(name)  ## TODO: remove issue with delattr in toJSON
     return scenario.toJSON()
 
 @pythiaroute.get("/find/ambiguous/{name}")
@@ -130,14 +127,12 @@ def findAmbiguous(name: str, user: User = Depends(get_current_active_user)):
     scenario.findAmbiguousAttributes(strategy, t5Engine)
     ambiguousAttributes = scenario.getAmbiguousAttribute()
     updateScenario(name, scenario)
-    scenario = getScenarioFromDb(name)  ## TODO: remove issue with delattr in toJSON
     return scenario.toJSON()
 
 
 @pythiaroute.post("/save/{name}")
 def saveScenario(name: str,  scenario = Form(...), user: User = Depends(get_current_active_user)):
     updateScenario(name, scenario, False)
-    scenario = getScenarioFromDb(name)  ## TODO: remove issue with delattr in toJSON
     return scenario.toJSON()
 
 @pythiaroute.post("/save/templates/{name}")

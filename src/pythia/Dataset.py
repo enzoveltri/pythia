@@ -220,6 +220,7 @@ class Dataset:
         return ""
 
     def toJSON(self):
-        delattr(self, "dataframe")
+        if hasattr(self, "dataframe"):
+            delattr(self, "dataframe")
         return json.dumps(self, default=lambda o: o.__dict__, indent=4)
 
