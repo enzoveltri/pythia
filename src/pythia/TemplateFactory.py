@@ -38,11 +38,11 @@ class TemplateFactory:
 
     def _initTemplates(self):
         self.templates = [
-            (attributeTemplate, TYPE_ATTRIBUTE, printConfigAttribute), ## TODO: Add name
-            (rowTemplate, TYPE_ROW, printConfigRow),
-            (fullTemplate, TYPE_FULL, printConfigAttribute),
-            (fdTemplate, TYPE_FD, None),
-            (functionTemplate, TYPE_FUNC, printConfigFunc),
+            (attributeTemplate, TYPE_ATTRIBUTE, printConfigAttribute, "Attribute Ambiguity"),
+            (rowTemplate, TYPE_ROW, printConfigRow, "Row Ambiguity"),
+            (fullTemplate, TYPE_FULL, printConfigAttribute, "Full Ambiguity"),
+            (fdTemplate, TYPE_FD, None, "FD Ambiguity"),
+            (functionTemplate, TYPE_FUNC, printConfigFunc, "Func Ambiguity"),
             ## MORE DEFINITION HERE ##
         ]
 
@@ -56,15 +56,15 @@ class TemplateFactory:
 
     def getTemplatesByType(self, type):
         templatesByType = []
-        for template, templateType, printF in self.templates:
+        for template, templateType, printF, name in self.templates:
             if (templateType == type):
-                templatesByType.append((template, templateType, printF))
+                templatesByType.append((template, templateType, printF, name))
         return templatesByType
 
 
-def getTemplatesByType(templates, type):
+def getTemplatesByName(templates, name):
     templatesByType = []
-    for template, templateType, printF in templates:
-        if (templateType == type):
+    for template, templateType, printF, templateName in templates:
+        if (templateName == name):
             templatesByType.append((template, templateType, printF))
     return templatesByType

@@ -138,8 +138,8 @@ class Dataset:
     def findAmbiguousAttributes(self, strategy, t5Engine):
         self.ambiguousAttribute = []
         pairwiseAttributes = []
-        #pairwiseAttributes = list(combinations(self.attributes, 2))
-        pairwiseAttributes = list(permutations(self.attributes, 2))
+        pairwiseAttributes = list(combinations(self.attributes, 2))
+        #pairwiseAttributes = list(permutations(self.attributes, 2))
         if (strategy == STRATEGY_SCHEMA):
             linearizedSchema = self._linearizeSchema()
             for attr1, attr2 in pairwiseAttributes:

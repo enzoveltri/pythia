@@ -1,27 +1,21 @@
 import csv
 import json
 import os
+import random
 
 from fastapi import APIRouter, Depends, UploadFile, Form
 
-from src.pythia.Constants import STRATEGY_SCHEMA
+from src.pythia.Constants import *
 from src.pythia.Pythia import find_a_queries
 from src.pythia.T5Engine import T5Engine
-from src.pythia.TemplateFactory import TemplateFactory, getTemplatesByType
+from src.pythia.TemplateFactory import TemplateFactory, getTemplatesByName
 from src.rest.Authentication import User, get_current_active_user
 from src.pythia.DBUtils import getScenarioListFromDb, getScenarioFromDb, deleteScenarioFromDb, existsDTModelInDb, \
-    insertScenario, getEngine, updateScenario, updateTemplates, getTemplatesFromDb, getDBConnection
+    insertScenario, getEngine, updateScenario, updateTemplates, getTemplatesFromDb, getDBConnection, getColumnsName, \
+    getDbUser, getDbPassword, getDbHost, getDbPort, getDbName, executeQueryBatch
 from src.pythia.Dataset import Dataset
 
 t5Engine = T5Engine().getInstance()
-
-## DB PARAMETER
-# TODO: read from config file
-DB_USER = "postgres"
-DB_PASSWORD = "postgres"
-DB_HOST = "localhost"
-DB_PORT = "5432"
-DB_NAME = "pythia"
 
 pythiaroute = APIRouter()
 
@@ -53,7 +47,7 @@ def uploadFile(file: UploadFile = Form(...), user: User = Depends(get_current_ac
     attributes = dataset.getAttributes()
     df = dataset.getDataFrame()
     dataset.findPK()
-    engine = getEngine(DB_USER, DB_PASSWORD, DB_HOST, DB_PORT, DB_NAME)
+    engine = getEngine(getDbUser(), getDbPassword(), getDbHost(), getDbPort(), getDbName())
     checkDB = dataset.storeInDB(engine)
     print("*** Check DB: ", checkDB)
     insertScenario(datasetName, user.username, dataset)
@@ -85,6 +79,18 @@ def getScenario(name: str, user: User = Depends(get_current_active_user)):
 def getTemplates(name: str, user: User = Depends(get_current_active_user)):
     templates = getTemplatesFromDb(name)
     return json.dumps(templates)
+
+@pythiaroute.get("/get/templates/structure/{type}")
+def getTemplateStructure(type: str, user: User = Depends(get_current_active_user)):
+    result = []
+    templateFactory = TemplateFactory()
+    templateStruct = templateFactory.getTemplatesByType(type)
+    if len(templateStruct) > 0:
+        for template, templateType, printF, name in templateStruct:
+            result.append((template, templateType, [], ""))
+    else:
+        result.append(("", "", "", ""))
+    return json.dumps(result[0])
 
 @pythiaroute.get("/find/pk/{name}")
 def findPrimaryKey(name: str, user: User = Depends(get_current_active_user)):
@@ -123,7 +129,6 @@ def findAmbiguous(name: str, user: User = Depends(get_current_active_user)):
     strategy = STRATEGY_SCHEMA ## TODO: Parameter
     scenario.findAmbiguousAttributes(strategy, t5Engine)
     ambiguousAttributes = scenario.getAmbiguousAttribute()
-    print(len(ambiguousAttributes))
     updateScenario(name, scenario)
     scenario = getScenarioFromDb(name)  ## TODO: remove issue with delattr in toJSON
     return scenario.toJSON()
@@ -135,29 +140,147 @@ def saveScenario(name: str,  scenario = Form(...), user: User = Depends(get_curr
     scenario = getScenarioFromDb(name)  ## TODO: remove issue with delattr in toJSON
     return scenario.toJSON()
 
+@pythiaroute.post("/save/templates/{name}")
+def saveTemplates(name: str,  templates = Form(...), user: User = Depends(get_current_active_user)):
+    templates = templates.replace("''", "'").replace("'", "''")
+    updateTemplates(name, templates)
+    templates = getTemplatesFromDb(name)
+    return json.dumps(templates)
+
 
 @pythiaroute.post("/predict/{name}")
-def predict(name: str, strategy: str = Form(...), structure: str = Form(...), user: User = Depends(get_current_active_user)):
-    connection = getDBConnection(DB_USER, DB_PASSWORD, DB_HOST, DB_PORT, DB_NAME)
+def predict(name: str, strategy: str = Form(...), structure: str = Form(...), limitResults: int = Form(...), user: User = Depends(get_current_active_user)):
+    connection = getDBConnection(getDbUser(), getDbPassword(), getDbHost(), getDbPort(), getDbName())
     scenario = getScenarioFromDb(name)
     totalTemplates = getTemplatesFromDb(name)
-    print("Schema: ", STRATEGY_SCHEMA)
-    print("Strategy: ", strategy)
-    print("Structure: ", structure)
-    templates = getTemplatesByType(totalTemplates, structure)
+    print("*** Schema: ", STRATEGY_SCHEMA)
+    print("*** Strategy: ", strategy)
+    print("*** Structure: ", structure)
+    templates = getTemplatesByName(totalTemplates, structure)
     a_queries, a_queries_with_data = find_a_queries(scenario, templates, strategy, connection,
                                                     operators=["=", ">", "<"], functions=["min", "max"],
-                                                    executeQuery=True, limitQueryResults=10, shuffleQuery=True)
-    print("Total A-Queries Generated:", len(a_queries))
-    print("Differents A-Queries: ", len(set(a_queries)))
+                                                    executeQuery=True, limitQueryResults=limitResults, shuffleQuery=True)
+    print("*** Total A-Queries Generated:", len(a_queries))
+    print("*** Differents A-Queries: ", len(set(a_queries)))
+
     result = []
-    if len(set(a_queries)) > 0:
-        for r in a_queries_with_data:
-            result.append(r)
+    tName = scenario.datasetName
+    for a_query, type, results, template, fd in a_queries_with_data:
+        tables_from_sentences = []
+        if (type == TYPE_FD):
+            pk = scenario.pk.name
+            #TODO: to_totto_fd raises an exception. See the method for details
+            #fdTemplateQuery = "SELECT b1.$LHS$,b1.$RHS$, b1.$PK$ FROM $TABLE$ b1 WHERE b1.$RHS$ = $VALUE$"
+            #to_totto = to_totto_fd(results, fdTemplateQuery, tName, pk, connection, fd)
+            #tables_from_sentences = get_tables_from_sentences(to_totto)
+        if (type == TYPE_ROW):
+            columnsQuery = getColumnsName(a_query, connection)
+            to_totto = to_totto_row(results, columnsQuery)
+            tables_from_sentences = get_tables_from_sentences(to_totto)
+        if (type == TYPE_ATTRIBUTE):
+            columnsQuery = getColumnsName(a_query, connection)
+            to_totto = to_totto_attribute(results, columnsQuery)
+            tables_from_sentences = get_tables_from_sentences(to_totto)
+        if (type == TYPE_FULL):
+            # TODO: to_totto_full raises an exception. See the method for details
+            columnsQuery = getColumnsName(a_query, connection)
+            to_totto = to_totto_full(results, columnsQuery)
+            tables_from_sentences = get_tables_from_sentences(to_totto)
+        result.append((a_query, type, results, template, fd, tables_from_sentences))
     return result
 
 
+#TODO: Move next methods to appropriate class
+def get_tables_from_sentences(to_totto_list):
+    totto_examples = []
+    for sentence, data in to_totto_list:
+        example = to_sentence_details_table(data)
+        totto_examples.append(example)
+    return totto_examples
 
+def to_sentence_details_table(selectedData):
+    table = '<table class="table table-sm table-striped table-bordered table-hover">'
+    table += '<thead><tr>'
+    columns = selectedData[0]
+    for pos in range(0, len(columns)):
+        table += '<th>' + str(columns[pos]) + '</th>'
+    table += '</tr></thead>'
+    table += '<tbody>'
+    for row in selectedData[1:]:
+        table += '<tr>'
+        for pos in range(0, len(columns)):
+            table += "<td> " + str(row[pos]) +"</td>"
+        table += '</tr>'
+    table += '</tbody></table>'
+    return table
+
+def to_totto_full(results, cols):
+    to_totto = []
+    for row in results:
+        sentence = row[0]
+        colList = []
+        row1List = []
+        row2List = []
+        for i in range(1, len(cols), 2):
+            colList.append(cols[i])
+            row1List.append(row[i])
+            #row2List.append(row[i+1]) #TODO: row[i+1] raises an exception in some rows. Temporarily I put an if in the next line
+            if len(row) > (i+1):
+                row2 = row[i + 1]
+            else:
+                row2 = "OVERSIZE"
+            row2List.append(row2)
+        data = [tuple(colList), tuple(row1List), tuple(row2List)]
+        to_totto.append((sentence, data))
+    return to_totto
+
+def to_totto_row(results, cols):
+    to_totto = []
+    for row in results:
+        sentence = row[0]
+        t0 = (cols[1], cols[3], cols[5])
+        t1 = (row[1], row[3], row[5])
+        t2 = (row[2], row[4], row[6])
+        data = [t0, t1, t2]
+        to_totto.append((sentence, data))
+    return to_totto
+
+def to_totto_attribute(results, cols):
+    to_totto = []
+    for row in results:
+        sentence = row[0]
+        t0 = (cols[1], cols[3], cols[5])
+        t1 = (row[1], row[3], row[5])
+        t2 = (row[2], row[4], row[6])
+        data = [t0, t1, t2]
+        to_totto.append((sentence, data))
+    return to_totto
+
+def to_totto_fd(results, fdTemplateQuery, tableName , pk, connection, fd):
+    to_totto = []
+    print("*** fd: ", fd)
+    lhsAttr = fd[0][0]
+    rhsAttr = fd[0][1]
+    for row in results:
+        sentence = row[0]
+        lhs = row[1]
+        rhs = row[2]
+        #print(sentence, lhs, rhs)
+        queryData = fdTemplateQuery
+        print("*** lhsAttr: ", lhsAttr)
+        print("*** rhsAttr: ", rhsAttr)
+        print("*** rhs: ", rhs)
+        queryData = queryData.replace('$LHS$', ('"' + lhsAttr + '"')) #TODO: this line fails because it's a list
+        queryData = queryData.replace('$RHS$', ('"' + rhsAttr + '"')) #TODO: this line fails because it's a list
+        queryData = queryData.replace('$TABLE$', tableName)
+        queryData = queryData.replace('$VALUE$', "'"+rhs+"'")
+        queryData = queryData.replace('$PK$', ('"' + pk + '"'))
+        dataTable = executeQueryBatch(queryData, connection)
+        cQ = getColumnsName(queryData, connection)
+        tupleColumn = tuple(cQ)
+        dataTable.insert(0, tupleColumn)
+        to_totto.append((sentence, dataTable))
+    return to_totto
 
 
 

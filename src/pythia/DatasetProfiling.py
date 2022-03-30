@@ -3,7 +3,7 @@
 ## DEPLOYING T5 REQUIRES CLOUD VMs SO WE CACHED PREDICTIONS IN <a1,a2,label> LIST --> AMBIGUITIES
 ########################################################
 
-from Constants import CATEGORICAL, NUMERICAL
+from src.pythia.Constants import CATEGORICAL, NUMERICAL
 
 def _getAttribute(attributes, name):
     for attribute in attributes:
