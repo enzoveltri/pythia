@@ -18,3 +18,4 @@ tqdm==4.62.3
 transformers==4.1.1
 uci_dataset==0.0.7
 uvicorn==0.17.6
+bcrypt==3.2.0
