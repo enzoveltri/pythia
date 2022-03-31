@@ -135,11 +135,14 @@ class Dataset:
         ##return self.ambiguousAttributeNormalized
         return normalizedAttributes
 
-    def findAmbiguousAttributes(self, strategy, t5Engine):
+    def findAmbiguousAttributes(self, strategy, t5Engine, usePermutation=False):
+        ## usePermutation = False to avoid to compare A-B and B-A
         self.ambiguousAttribute = []
         pairwiseAttributes = []
-        pairwiseAttributes = list(combinations(self.attributes, 2))
-        #pairwiseAttributes = list(permutations(self.attributes, 2))
+        if usePermutation:
+            pairwiseAttributes = list(permutations(self.attributes, 2))
+        else:
+            pairwiseAttributes = list(combinations(self.attributes, 2))
         if (strategy == STRATEGY_SCHEMA):
             linearizedSchema = self._linearizeSchema()
             for attr1, attr2 in pairwiseAttributes:
@@ -147,7 +150,7 @@ class Dataset:
                 if label is not None:
                     self.ambiguousAttribute.append((attr1, attr2, label))
         if (strategy == STRATEGY_SCHEMA_WITH_DATA_SAMPLE):
-            schemaWithData = self._schemaWithDataSample() ## TODO code in colab task3
+            schemaWithData = self._schemaWithDataSample()  ## TODO code in colab task3
             for attr1, attr2 in pairwiseAttributes:
                 label = getAmbiguousAttribute(schemaWithData, attr1, attr2, strategy, t5Engine)
                 if label is not None:

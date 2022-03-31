@@ -14,6 +14,10 @@ class T5Engine:
         return T5Engine.__instance
 
     def __init__(self):
+        #print("Num GPUs Available: ", len(tf.config.list_physical_devices('GPU')))
+        #print(type(tf.config.list_physical_devices()))
+        for device in tf.config.list_physical_devices():
+            print(device)
         """ Virtually private constructor. """
         if T5Engine.__instance != None:
             raise Exception("This class is a singleton!")

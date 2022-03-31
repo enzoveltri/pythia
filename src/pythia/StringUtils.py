@@ -1,4 +1,5 @@
 import re
+import unicodedata
 
 def findTokens(string, match):
     string_list = string.split()
@@ -12,3 +13,6 @@ def normalizeString(s, char):
     s = s.lower()
     s = re.sub('[^0-9a-zA-Z]+', char, s)
     return s
+
+def normalizeAscii(value):
+    return unicodedata.normalize('NFKD', value).encode('ascii', 'ignore').decode('utf-8')
