@@ -58,12 +58,15 @@ def uploadFile(file: UploadFile = Form(...), user: User = Depends(get_current_ac
     return datasetName
 
 
-@pythiaroute.get("/dataframe/{name}")
-def getDataframe(name: str, user: User = Depends(get_current_active_user)):
+@pythiaroute.get("/dataframe/{name}/{offset}/{limit}")
+def getDataframe(name: str, offset: int, limit: int, user: User = Depends(get_current_active_user)):
     scenario = getScenarioFromDb(name)
-    ## TODO: manage pagination
-    return scenario.dataframe.iloc[0:10].to_html(classes='table table-striped table-bordered table-sm')
+    return scenario.dataframe.iloc[offset:limit].to_html(classes='table table-striped table-bordered table-sm')
 
+@pythiaroute.get("/dataframe/count/{name}")
+def getDataframeCount(name: str, user: User = Depends(get_current_active_user)):
+    scenario = getScenarioFromDb(name)
+    return len(scenario.dataframe)
 
 @pythiaroute.delete("/delete/{name}")
 def deleteScenario(name: str, user: User = Depends(get_current_active_user)):
@@ -162,12 +165,13 @@ def predict(name: str, strategy: str = Form(...), structure: str = Form(...), li
     tName = scenario.datasetName
     for a_query, type, results, template, fd in a_queries_with_data:
         tables_from_sentences = []
+        to_totto = []
         if (type == TYPE_FD):
             pk = scenario.pk.name
-            #TODO: to_totto_fd raises an exception. See the method for details
-            #fdTemplateQuery = "SELECT b1.$LHS$,b1.$RHS$, b1.$PK$ FROM $TABLE$ b1 WHERE b1.$RHS$ = $VALUE$"
-            #to_totto = to_totto_fd(results, fdTemplateQuery, tName, pk, connection, fd)
-            #tables_from_sentences = get_tables_from_sentences(to_totto)
+            # TODO: to_totto_fd raises an exception. See the method for details
+            # fdTemplateQuery = "SELECT b1.$LHS$,b1.$RHS$, b1.$PK$ FROM $TABLE$ b1 WHERE b1.$RHS$ = $VALUE$"
+            # to_totto = to_totto_fd(results, fdTemplateQuery, tName, pk, connection, fd)
+            # tables_from_sentences = get_tables_from_sentences(to_totto)
         if (type == TYPE_ROW):
             columnsQuery = getColumnsName(a_query, connection)
             to_totto = to_totto_row(results, columnsQuery)
@@ -181,7 +185,11 @@ def predict(name: str, strategy: str = Form(...), structure: str = Form(...), li
             columnsQuery = getColumnsName(a_query, connection)
             to_totto = to_totto_full(results, columnsQuery)
             tables_from_sentences = get_tables_from_sentences(to_totto)
-        result.append((a_query, type, results, template, fd, tables_from_sentences))
+        export_results = []
+        for i in range(len(results)):
+            export_results.append((to_totto[i][0], a_query, to_totto[i][1], template[1], strategy))
+            # export_results.append((results[i], a_query, to_totto[i], template[0], strategy))
+        result.append((a_query, type, results, template, fd, tables_from_sentences, export_results))
     return result
 
 
