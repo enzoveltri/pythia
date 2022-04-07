@@ -50,7 +50,11 @@ class Dataset:
                 self.pk = self.nameToAttribute[column]
                 break
         if self.pk is None:
-            self.pk = INDEX
+            _pk = INDEX
+            self.dataframe.insert(0, _pk.name, range(rows))
+            self.attributes = self._getAttributesFromDF(self.dataframe)
+            self.nameToAttribute = self._dictNameToAttribute()
+            self.pk = self.nameToAttribute[_pk.name]
         ## update also the dataframe
         self.dataframe.set_index(self.pk.name, inplace=True)
 
@@ -75,6 +79,7 @@ class Dataset:
         for fd in fdsName:
             fdAttr = []
             for attrName in fd:
+                attrName = [x for x in self.attributes if x.normalizedName == attrName][0].name
                 attr = self.nameToAttribute[attrName]
                 fdAttr.append(attr)
             self.fds.append(fdAttr)

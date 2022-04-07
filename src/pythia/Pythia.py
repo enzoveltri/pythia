@@ -290,7 +290,6 @@ def find_a_queries(dataset, templates, matchType, connection,
                         if (a_query is not None and executeQuery):
                             if shuffleQuery:
                                 a_query += " ORDER BY random()"
-                            print(a_query)
                             checkWithData(a_query, type, connection, a_queries_with_data, stored_results, template, None,
                                           limitQueryResults)
         if (type == TYPE_ROW) and (len(compositeKeys) > 0):

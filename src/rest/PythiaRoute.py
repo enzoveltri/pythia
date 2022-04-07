@@ -187,7 +187,8 @@ def predict(name: str, strategy: str = Form(...), structure: str = Form(...), li
             tables_from_sentences = get_tables_from_sentences(to_totto)
         export_results = []
         for i in range(len(results)):
-            export_results.append((to_totto[i][0], a_query, to_totto[i][1], template[1], strategy))
+            if len(to_totto) > 0:  # TODO: remove if clause when all the to_totto are ok
+                export_results.append((to_totto[i][0], a_query, to_totto[i][1], template[1], strategy))
             # export_results.append((results[i], a_query, to_totto[i], template[0], strategy))
         result.append((a_query, type, results, template, fd, tables_from_sentences, export_results))
     return result
