@@ -136,6 +136,7 @@ def findAmbiguous(name: str, user: User = Depends(get_current_active_user)):
 @pythiaroute.post("/save/{name}")
 def saveScenario(name: str,  scenario = Form(...), user: User = Depends(get_current_active_user)):
     updateScenario(name, scenario, False)
+    scenario = getScenarioFromDb(name)
     return scenario.toJSON()
 
 @pythiaroute.post("/save/templates/{name}")
