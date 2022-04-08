@@ -166,11 +166,13 @@ def attr_amb(dataset, pysqldf, sentenceGenerator, operator, matchType, limit, li
         #q = "SELECT " + pk.normalizedName + " as PK, " + attr1.normalizedName + " as AMB1, " + attr2.normalizedName + " as AMB2 FROM dataframe WHERE " + attr1.normalizedName + " " + operator + " " + attr2.normalizedName
         q = ""
         if matchType == Constants.MATCH_TYPE_CONTRADICTING:
-            q = "SELECT " + pk.normalizedName + " as PK, " + attr1.normalizedName + " as AMB1, " + attr2.normalizedName + " as AMB2 FROM dataframe WHERE " + attr1.normalizedName + " " + "<>" + " " + attr2.normalizedName
+            q = "SELECT d.'" + pk.normalizedName + "' as PK, d.'" + attr1.normalizedName + "' as AMB1, d.'" + attr2.normalizedName + "' as AMB2 FROM dataframe d WHERE d.'" + attr1.normalizedName + "' " + "<>" + " d.'" + attr2.normalizedName + "'"
         if matchType == Constants.MATCH_TYPE_UNIFORM_TRUE:
-            q = "SELECT " + pk.normalizedName + " as PK, " + attr1.normalizedName + " as AMB1, " + attr2.normalizedName + " as AMB2 FROM dataframe WHERE " + attr1.normalizedName + " " + "=" + " " + attr2.normalizedName
+            q = "SELECT d.'" + pk.normalizedName + "' as PK, d.'" + attr1.normalizedName + "' as AMB1, d.'" + attr2.normalizedName + "' as AMB2 FROM dataframe d WHERE d.'" + attr1.normalizedName + "' " + "=" + " d.'" + attr2.normalizedName + "'"
         if matchType == Constants.MATCH_TYPE_UNIFORM_FALSE:
-            q = "SELECT " + pk.normalizedName + " as PK, " + attr1.normalizedName + " as AMB1, " + attr2.normalizedName + " as AMB2 FROM dataframe WHERE " + attr1.normalizedName + " " + "<>" + " " + attr2.normalizedName
+            q = "SELECT d.'" + pk.normalizedName + "' as PK, d.'" + attr1.normalizedName + "' as AMB1, d.'" + attr2.normalizedName + "' as AMB2 FROM dataframe d WHERE d.'" + attr1.normalizedName + "' " + "<>" + " d.'" + attr2.normalizedName + "'"
+        #q = "SELECT d.id as PK, d.field_goal_made as AMB1, d.3_point_field_goal_attempted as AMB2 FROM dataframe d WHERE d.field_goal_made = d.3_point_field_goal_attempted"
+        #print("*** Q: ", q)
         dfSel = pysqldf(q).head(limit)
         domain1 = set(dataframe[attr1.normalizedName].unique())
         domain2 = set(dataframe[attr2.normalizedName].unique())
@@ -230,19 +232,19 @@ def row_amb(dataset, pysqldf,sentenceGenerator, operator, matchType, limit, limi
         ckAttr = ck[0]
         othersAttr = ck[1:]
         for attr in attrNotCks:
-            q = "SELECT d1." + attr.normalizedName + " as A1, d2." + attr.normalizedName + " as A2, d1." + ckAttr.normalizedName + " as CK_0_1, d2." + ckAttr.normalizedName + " as CK_0_2"
+            q = "SELECT d1.'" + attr.normalizedName + "' as A1, d2.'" + attr.normalizedName + "' as A2, d1.'" + ckAttr.normalizedName + "' as CK_0_1, d2.'" + ckAttr.normalizedName + "' as CK_0_2"
             count = 1
             for other in othersAttr:
-                q += ", d1." + other.normalizedName + " as CK_" + str(
-                    count) + "_1" + ", d2." + other.normalizedName + " as CK_" + str(count) + "_2"
+                q += ", d1.'" + other.normalizedName + "' as CK_" + str(
+                    count) + "_1" + ", d2.'" + other.normalizedName + "' as CK_" + str(count) + "_2"
                 count += 1
             last = othersAttr[-1]  ## ensure that at least one attribute is different
             q += " FROM dataframe d1, dataframe d2 WHERE d1." + ckAttr.normalizedName + " = d2." + ckAttr.normalizedName
-            q += " AND d1." + last.normalizedName + " <> d2." + last.normalizedName
+            q += " AND d1.'" + last.normalizedName + "' <> d2.'" + last.normalizedName
             if matchType == Constants.MATCH_TYPE_CONTRADICTING or matchType == Constants.MATCH_TYPE_UNIFORM_FALSE:
-                q += " AND d1." + attr.normalizedName + " " + "<>" + " d2." + attr.normalizedName
+                q += "' AND d1.'" + attr.normalizedName + "' " + "<>" + " d2.'" + attr.normalizedName + "'"
             if matchType == Constants.MATCH_TYPE_UNIFORM_TRUE:
-                q += " AND d1." + attr.normalizedName + " " + "=" + " d2." + attr.normalizedName
+                q += " AND d1.'" + attr.normalizedName + "' " + "=" + " d2.'" + attr.normalizedName + "'"
             dfSel = pysqldf(q).head(limit)
             columnsDF = list()
             columnsDF.append(attr)
@@ -305,22 +307,22 @@ def full_amb(dataset, pysqldf, sentenceGenerator, operator, matchType, limit, li
             if attr1 not in ck and attr2 not in ck:
                 ckAttr = ck[0]
                 othersAttr = ck[1:]
-                q = "SELECT b1." + ckAttr.normalizedName + " as CK_0_1, b2." + ckAttr.normalizedName + " as CK_0_2 "
+                q = "SELECT b1.'" + ckAttr.normalizedName + "' as CK_0_1, b2.'" + ckAttr.normalizedName + "' as CK_0_2 "
                 count = 1
                 for other in othersAttr:
-                    q += ", b1." + other.normalizedName + " as CK_" + str(
-                        count) + "_1" + ", b2." + other.normalizedName + " as CK_" + str(count) + "_2"
+                    q += ", b1.'" + other.normalizedName + "' as CK_" + str(
+                        count) + "_1" + ", b2.'" + other.normalizedName + "' as CK_" + str(count) + "_2"
                     count += 1
-                q += ", b1." + attr1.normalizedName + " as AMB_1_1, b2." + attr1.normalizedName + " as AMB_1_2"
-                q += ", b1." + attr2.normalizedName + " as AMB_2_1, b2." + attr2.normalizedName + " as AMB_2_2"
-                q += " FROM dataframe b1, dataframe b2 WHERE b1." + ckAttr.normalizedName + " = b2." + ckAttr.normalizedName
+                q += ", b1.'" + attr1.normalizedName + "' as AMB_1_1, b2.'" + attr1.normalizedName + "' as AMB_1_2"
+                q += ", b1.'" + attr2.normalizedName + "' as AMB_2_1, b2.'" + attr2.normalizedName + "' as AMB_2_2"
+                q += " FROM dataframe b1, dataframe b2 WHERE b1.'" + ckAttr.normalizedName + "' = b2.'" + ckAttr.normalizedName
                 last = othersAttr[-1] ## ensure that at least one attribute is different
-                q += " AND b1." + last.normalizedName + " <> b2." + last.normalizedName
+                q += "' AND b1.'" + last.normalizedName + "' <> b2.'" + last.normalizedName
                 if matchType == Constants.MATCH_TYPE_CONTRADICTING or matchType == Constants.MATCH_TYPE_UNIFORM_FALSE:
-                         q += " AND b1." + attr1.normalizedName + " <> b2." + attr1.normalizedName + " AND b1." + attr2.normalizedName + " <> b2." + attr2.normalizedName
+                         q += "' AND b1.'" + attr1.normalizedName + "' <> b2.'" + attr1.normalizedName + "' AND b1.'" + attr2.normalizedName + "' <> b2.'" + attr2.normalizedName + "'"
                 if matchType == Constants.MATCH_TYPE_UNIFORM_TRUE:
-                        q += " AND b1." + attr1.normalizedName + " == b2." + attr1.normalizedName + " AND b1." + attr2.normalizedName + " == b2." + attr2.normalizedName \
-                         + " AND b1." + attr1.normalizedName + " == b2." + attr2.normalizedName
+                        q += "' AND b1.'" + attr1.normalizedName + "' == b2.'" + attr1.normalizedName + "' AND b1.'" + attr2.normalizedName + "' == b2.'" + attr2.normalizedName \
+                         + "' AND b1.'" + attr1.normalizedName + "' == b2.'" + attr2.normalizedName + "'"
                 dfSel = pysqldf(q).head(limit)
                 # print(q)
                 # print(dfSel)
