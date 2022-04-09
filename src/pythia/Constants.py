@@ -12,7 +12,7 @@ TYPE_FUNC = 'func'
 
 ## PANDAS INDEX
 #INDEX = ['index']
-INDEX = Attribute("index")
+INDEX = Attribute("id")
 INDEX.type = NUMERICAL
 
 ## STRATEGIES AMBIGUITY ATTRIBUTES

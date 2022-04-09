@@ -171,7 +171,7 @@ class Dataset:
         for name, attr in self.nameToAttribute.items():
             dictRename[name] = attr.normalizedName
         dfDB.rename(columns=dictRename, inplace=True)
-        dfDB.to_sql(self.datasetName, engine, if_exists=if_exists)
+        dfDB.to_sql(self.datasetName, engine, if_exists=if_exists, index_label=self.pk.normalizedName)
         dataframeRows = self.dataframe.shape[0]
         rowsInDB = engine.execute("SELECT count(*) from "+self.datasetName).fetchall()[0][0]
         return dataframeRows == rowsInDB
