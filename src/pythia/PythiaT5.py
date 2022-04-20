@@ -35,6 +35,17 @@ def tottoSentence(table, concept,  pkValue, pkAttributeName,  cellValue, label):
     input += "<table> " + rowValue + " </table>"
     return input
 
+def tottoSentenceCellList(table, concept, cellList, attributeList):
+    input = "totto table: "
+    input += "<page_title> " + table + " </page_title> "
+    input += "<section_title> " + concept + " </section_title> "
+    rowValue = "<row>"
+    for cell, attr in zip(cellList, attributeList):
+        rowValue+="<cell> " + str(cell) + " <col_header> " + str(attr.name) + " <col_header> </cell> "
+    rowValue += "</row>"
+    input += "<table> " + rowValue + " </table>"
+    return input
+
 def toColumnName(attrList):
     columnsName = []
     for attr in attrList:
@@ -57,17 +68,32 @@ def getValueUniformFalse(valuesExclude, domain, maxAttempts = 10):
             return elem
     return None
 
-if __name__ == '__main__xx':  ## dataset profiling
+if __name__ == '__main__xxx':  ## dataset profiling
     #file = "/Users/enzoveltri/Downloads/datasets/soccer.csv"
     #file = "/Users/enzoveltri/Downloads/datasets/soccer_small.csv"
     #file = "/Users/enzoveltri/Downloads/datasets/iris.csv"
     #file = "/Users/enzoveltri/Downloads/datasets/abalone.csv"
-    file = "/Users/enzoveltri/Downloads/datasets/adults.csv"
+    #file = "/Users/enzoveltri/Downloads/datasets/adults.csv"
+    #file = "/Users/enzoveltri/Downloads/datasets/basket_full_names.csv"
+    #file = "/Users/enzoveltri/Downloads/datasets/basket_acronyms.csv"
+    #file = "/Users/enzoveltri/Downloads/datasets/basket_complete.csv"
+    #file = "/Users/enzoveltri/Downloads/datasets/mushroom.csv"
+    #file = "/Users/enzoveltri/Downloads/datasets/heart_2020.csv"
+    #file = "/Users/enzoveltri/Downloads/datasets/wineqt.csv"
+    file = "/Users/enzoveltri/Downloads/datasets/superstore.csv"
+    #file = "/Users/enzoveltri/Downloads/datasets/laptop.csv"
     #name = "soccer"
     #name = "soccer_small"
     #name = "iris"
     #name = "abalone"
-    name = "adults"
+    #name = "adults"
+    #name = "basket_full_names"
+    #name = "basket_acronyms"
+    #name = "basket_complete_test_fd"
+    #name = "heart_2020"
+    #name = "wineqt"
+    name = "superstore"
+    #name = "laptop"
     #################################
     ## 1 load data into Dataset obj
     #################################
@@ -158,7 +184,6 @@ def attr_amb(dataset, pysqldf, sentenceGenerator, operator, matchType, limit, li
     cks = dataset.getCompositeKeys()
     attributes = dataset.getAttributes()
     dataframe = dataset.getDataFrame()
-    counter = 0
     examples = []
     for attr1, attr2, label in ambiguousAttributes:
         #if (attr1.type == Constants.CATEGORICAL or attr2.type == Constants.CATEGORICAL and operator != "=" and operator != "<>"):
@@ -181,6 +206,7 @@ def attr_amb(dataset, pysqldf, sentenceGenerator, operator, matchType, limit, li
         domain = domain1.union(domain2)
         columnsDF = [pk, attr1, attr2]
         colSentenceDF = toColumnName(columnsDF)
+        counter = 0
         for index, row in dfSel.iterrows():
             dfSentence = row.to_frame().T
             dfSentence.columns = colSentenceDF
@@ -212,23 +238,27 @@ def attr_amb(dataset, pysqldf, sentenceGenerator, operator, matchType, limit, li
                 pythiaExample = PythiaExample(dfSentence, sentence, q, toTotto, Constants.TYPE_ATTRIBUTE, operator, matchType)
                 examples.append(pythiaExample)
                 counter += 1
-            if limitPerType != -1 and counter >= limitPerType : return examples[0:limitPerType]
+            if limitPerType != -1 and counter >= limitPerType : break
     return examples
 
 #######################
 ## row ambiguity
 #######################
-def row_amb(dataset, pysqldf,sentenceGenerator, operator, matchType, limit, limitPerType=-1):
+def row_amb(dataset, pysqldf,sentenceGenerator, operator, matchType, limit, limitPerType=-1, useFDs=False):
     ambiguousAttributes = dataset.getAmbiguousAttribute()
     pk = dataset.getPk()
     cks = dataset.getCompositeKeys()
     attributes = dataset.getAttributes()
     dataframe = dataset.getDataFrame()
-    counter = 0
     examples = []
+    fds = dataset.getFDs()
+    if len(cks) == 0 and useFDs:
+        cks = []
+        for fd in fds:
+            cks.append(fd[0])
     for ck in cks:
         attrNotCks = [x for x in attributes if x not in ck]
-        attrNotCks.remove(pk)
+        if pk in attrNotCks: attrNotCks.remove(pk)
         ckAttr = ck[0]
         othersAttr = ck[1:]
         for attr in attrNotCks:
@@ -239,12 +269,12 @@ def row_amb(dataset, pysqldf,sentenceGenerator, operator, matchType, limit, limi
                     count) + "_1" + ", d2.'" + other.normalizedName + "' as CK_" + str(count) + "_2"
                 count += 1
             last = othersAttr[-1]  ## ensure that at least one attribute is different
-            q += " FROM dataframe d1, dataframe d2 WHERE d1." + ckAttr.normalizedName + " = d2." + ckAttr.normalizedName
-            q += " AND d1.'" + last.normalizedName + "' <> d2.'" + last.normalizedName
+            q += " FROM dataframe d1, dataframe d2 WHERE d1.'" + ckAttr.normalizedName + "' = d2.'" + ckAttr.normalizedName
+            q += "' AND d1.'" + last.normalizedName + "' <> d2.'" + last.normalizedName
             if matchType == Constants.MATCH_TYPE_CONTRADICTING or matchType == Constants.MATCH_TYPE_UNIFORM_FALSE:
                 q += "' AND d1.'" + attr.normalizedName + "' " + "<>" + " d2.'" + attr.normalizedName + "'"
             if matchType == Constants.MATCH_TYPE_UNIFORM_TRUE:
-                q += " AND d1.'" + attr.normalizedName + "' " + "=" + " d2.'" + attr.normalizedName + "'"
+                q += "' AND d1.'" + attr.normalizedName + "' " + "=" + " d2.'" + attr.normalizedName + "'"
             dfSel = pysqldf(q).head(limit)
             columnsDF = list()
             columnsDF.append(attr)
@@ -254,6 +284,7 @@ def row_amb(dataset, pysqldf,sentenceGenerator, operator, matchType, limit, limi
             #domain1 = set(dataframe["A1"].unique())
             #domain2 = set(dataframe["A2"].unique())
             #domain = domain1.union(domain2)
+            counter = 0
             for index, row in dfSel.iterrows():
                 reshapedValues = row.values.reshape(len(columnsDF), 2).T
                 dfSentence = pd.DataFrame(reshapedValues, columns=colSentenceDF)
@@ -285,20 +316,24 @@ def row_amb(dataset, pysqldf,sentenceGenerator, operator, matchType, limit, limi
                     pythiaExample = PythiaExample(dfSentence, sentence, q, toTotto, Constants.TYPE_ROW, operator, matchType)
                     examples.append(pythiaExample)
                     counter += 1
-                if limitPerType != -1 and counter >= limitPerType : return examples[0:limitPerType]
+                if limitPerType != -1 and counter >= limitPerType : break
     return examples
 
 #######################
 ## full ambiguity
 #######################
-def full_amb(dataset, pysqldf, sentenceGenerator, operator, matchType, limit, limitPerType=-1):
+def full_amb(dataset, pysqldf, sentenceGenerator, operator, matchType, limit, limitPerType=-1, useFDs=False):
     ambiguousAttributes = dataset.getAmbiguousAttribute()
     pk = dataset.getPk()
     cks = dataset.getCompositeKeys()
     attributes = dataset.getAttributes()
     dataframe = dataset.getDataFrame()
-    counter = 0
     examples = []
+    fds = dataset.getFDs()
+    if len(cks) == 0 and useFDs:
+        cks = []
+        for fd in fds:
+            cks.append(fd[0])
     for attr1, attr2, label in ambiguousAttributes:
         #if (attr1.type == Constants.CATEGORICAL and attr2.type == Constants.CATEGORICAL and operator != "=" and operator != "<>"):
         #    continue
@@ -334,6 +369,7 @@ def full_amb(dataset, pysqldf, sentenceGenerator, operator, matchType, limit, li
                 columnsDF.append(attr1)
                 columnsDF.append(attr2)
                 colSentenceDF = toColumnName(columnsDF)
+                counter = 0
                 for index, row in dfSel.iterrows():
                     reshapedValues = row.values.reshape(len(columnsDF), 2).T
                     dfSentence = pd.DataFrame(reshapedValues, columns=colSentenceDF)
@@ -365,7 +401,83 @@ def full_amb(dataset, pysqldf, sentenceGenerator, operator, matchType, limit, li
                         pythiaExample = PythiaExample(dfSentence, sentence, q, toTotto, Constants.TYPE_FULL, operator, matchType)
                         examples.append(pythiaExample)
                         counter += 1
-                    if limitPerType != -1 and counter >= limitPerType : return examples[0:limitPerType]
+                    if limitPerType != -1 and counter >= limitPerType : break
+    return examples
+
+###################
+## NO_AMB
+###################
+def no_amb(dataset, pysqldf, sentenceGenerator, operator, matchType, limit, limitPerType=-1):
+    examples = []
+    counter = 0
+    ambiguousAttributes = dataset.getAmbiguousAttribute()
+    pk = dataset.getPk()
+    cks = dataset.getCompositeKeys()
+    attributes = dataset.getAttributes()
+    notAmbiguousAttr = dataset.findNonAmbiguousAttributes()
+    notAmbiguousRow = [] ##TODO: implement rows
+    for notAmb in notAmbiguousAttr:
+        if notAmb == pk: continue
+        counter = 0
+        q = "SELECT d.'" + pk.normalizedName + "' as PK, d.'" + notAmb.normalizedName + "' as A FROM dataframe d"
+        dfSel = pysqldf(q).head(limit)
+        columnsDF = [pk, notAmb]
+        colSentenceDF = toColumnName(columnsDF)
+        for index, row in dfSel.iterrows():
+            dfSentence = row.to_frame().T
+            dfSentence.columns = colSentenceDF
+            pkCell = row["PK"]
+            attr1Cell = row["A"]
+            toTotto = tottoSentence(dataset.getDatasetName(), dataset.concept, pkCell, pk.name, attr1Cell, notAmb.name)
+            sentence = ""
+            if sentenceGenerator is not None:
+                sentence = sentenceGenerator.predict(toTotto)
+            qMod = "SELECT " + pk.name + ", " + notAmb.name + " FROM dataframe WHERE " + notAmb.name + " = " + str(attr1Cell)
+            pythiaExample = PythiaExample(dfSentence, sentence, qMod, toTotto, Constants.TYPE_ATTRIBUTE, operator, "NO_AMBIGUITY")
+            examples.append(pythiaExample)
+            counter += 1
+            if limitPerType != -1 and counter >= limitPerType: break
+    for ck in cks:
+        qSel = "SELECT "
+        counter_ck = 0
+        for attr in ck:
+            qSel += "d.'" + attr.normalizedName + "' as CK_" + str(counter_ck) +", "
+            counter_ck += 1
+        for notAmb in notAmbiguousAttr:
+            if notAmb == pk: continue
+            counter = 0
+            q = qSel
+            q += "d.'" + notAmb.normalizedName + "' as A FROM dataframe d"
+            dfSel = pysqldf(q).head(limit)
+            columnsDF = []
+            columnsDF += ck
+            columnsDF.append(notAmb)
+            colSentenceDF = toColumnName(columnsDF)
+            for index, row in dfSel.iterrows():
+                dfSentence = row.to_frame().T
+                dfSentence.columns = colSentenceDF
+                cells = []
+                for i in range(0, counter_ck):
+                    cells.append(row["CK_"+str(i)])
+                    #cells[i] = row[i]
+                cells.append(row["A"])
+                toTotto = tottoSentenceCellList(dataset.getDatasetName(), dataset.concept, cells, columnsDF)
+                sentence = ""
+                if sentenceGenerator is not None:
+                    sentence = sentenceGenerator.predict(toTotto)
+                qMod = "SELECT "
+                where = "WHERE "
+                for cell, attr in zip(cells, columnsDF):
+                    qMod += attr.name+","
+                    where += attr.name + " = " + str(cell) + " AND "
+                qMod = qMod[:-1]
+                where = where[:-5]
+                qMod = qMod + " FROM dataframe " + where
+                pythiaExample = PythiaExample(dfSentence, sentence, qMod, toTotto, Constants.TYPE_ATTRIBUTE, operator, "NO_AMBIGUITY")
+                examples.append(pythiaExample)
+                counter += 1
+                if limitPerType != -1 and counter >= limitPerType: break
+
     return examples
 
 if __name__ == '__main__': ## sentence generation
@@ -375,8 +487,8 @@ if __name__ == '__main__': ## sentence generation
     DB_PORT = "5432"
     DB_NAME = "ambiguities"
 
-    name = "soccer_small"
-    #name = "adults"
+    name = "abalone"
+    #name = "heart_2020"
     datasetJson = name + ".json"
     filePath = "/Users/enzoveltri/Downloads/datasets/"
     jsonFile = filePath + datasetJson
@@ -404,41 +516,51 @@ if __name__ == '__main__': ## sentence generation
     dataframe = dataset.getDataFrame()
     #print(dataframe.head(2))
     #print(dataframe.columns)
-    dataframe = dataframe.rename(columns={"index": "id"})
+    #dataframe = dataframe.rename(columns={"index": "id"})
     pysqldf = lambda q: sqldf(q, globals()) ## to query dataframes
     examples = []
     sentenceGenerator = T5SentenceGenerator()
     #sentenceGenerator = None
-    limit = 10
-    examplePerType = 15
+    limit = 50
+    examplePerType = 50
+    useFDs = False
     calculateAttribute = False
-    calculateRow = True
+    calculateRow = False
     calculateFull = False
-    #dataset.concept = "adults"
-    #dataset.datasetName = "adults"
-    dataset.concept = "soccer"
-    dataset.datasetName = "soccer"
+    calculateNoAmb = True
+    #dataset.concept = "heart"
+    #dataset.datasetName = "heart"
+    dataset.concept = "abalone"
+    dataset.datasetName = "abalone"
     #operators = ["<", ">"]
     operators = ["="]
-    mt = Constants.MATCH_TYPE_CONTRADICTING
-    #mt = Constants.MATCH_TYPE_UNIFORM_TRUE
-    #mt = Constants.MATCH_TYPE_UNIFORM_FALSE
-    mts = [Constants.MATCH_TYPE_CONTRADICTING, Constants.MATCH_TYPE_UNIFORM_TRUE, Constants.MATCH_TYPE_UNIFORM_FALSE]
+    #mts = [Constants.MATCH_TYPE_CONTRADICTING, Constants.MATCH_TYPE_UNIFORM_TRUE, Constants.MATCH_TYPE_UNIFORM_FALSE]
+    mts = [Constants.MATCH_TYPE_CONTRADICTING]
     for op in operators:
         for mt in mts:
             if calculateAttribute:
                 examples += attr_amb(dataset, pysqldf,sentenceGenerator, op, mt, limit, examplePerType)
             if calculateRow:
-                examples += row_amb(dataset, pysqldf,sentenceGenerator, op, mt, limit, examplePerType)
+                examples += row_amb(dataset, pysqldf,sentenceGenerator, op, mt, limit, examplePerType, useFDs)
             if calculateFull:
-                examples += full_amb(dataset, pysqldf,sentenceGenerator, op, mt, limit, examplePerType)
+                examples += full_amb(dataset, pysqldf,sentenceGenerator, op, mt, limit, examplePerType, useFDs)
+        if calculateNoAmb:
+            examples += no_amb(dataset, pysqldf,sentenceGenerator, op, mt, limit, examplePerType)
     ## json export
     datasetJson = name + "_sentence.json"
     filePath = "/Users/enzoveltri/Downloads/datasets/"
     jsonFile = filePath + datasetJson
     with open(jsonFile, 'w') as outfile:
+        outfile.write("[")
+        count = 1
+        numExamples = len(examples)
         for example in examples:
-            outfile.write(example.toJSON()+"\n")
+            if count < numExamples:
+                outfile.write(example.toJSON()+"\n,\n")
+            else:
+                outfile.write(example.toJSON() + "\n")
+            count += 1
+        outfile.write("]")
     print("Saved json: ", jsonFile)
 
 

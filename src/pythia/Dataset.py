@@ -164,6 +164,18 @@ class Dataset:
                 if label is not None:
                     self.ambiguousAttribute.append((attr1, attr2, label))
 
+    def findNonAmbiguousAttributes(self):
+        notAmbiguousAttr = []
+        if (self.ambiguousAttribute is None): return None
+        for attribute in self.attributes:
+            toAdd = True
+            for a1, a2, label in self.ambiguousAttribute:
+                if attribute == a1 or attribute == a2:
+                    toAdd = False
+                    break
+            if toAdd: notAmbiguousAttr.append(attribute)
+        return notAmbiguousAttr
+
     def storeInDB(self, engine, if_exists='replace'):
         ## if_exists {'fail', 'replace', 'append'}
         dfDB = self.dataframe.copy()
