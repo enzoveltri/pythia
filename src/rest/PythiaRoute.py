@@ -37,7 +37,9 @@ def checkScenario(name: str, user: User = Depends(get_current_active_user)):
 
 @pythiaroute.post("/create")
 def uploadFile(file: UploadFile = Form(...), user: User = Depends(get_current_active_user)):
-    file_location = f"../../data/tmp/{file.filename}"
+    tmpFolder = "../../data/tmp/" ## TODO: use system tmp folder
+    if not os.path.exists(tmpFolder): os.makedirs(tmpFolder)
+    file_location = f"../../data/tmp/{file.filename}" ## TODO: user the reference to the folder above
     name = file.filename.replace(".csv", "")
     datasetName = user.username + "_" + name
     with open(file_location, "wb+") as file_object:
