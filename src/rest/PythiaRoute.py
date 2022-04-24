@@ -167,6 +167,7 @@ def predict(name: str, strategy: str = Form(...), structure: str = Form(...), li
     index = 0
     for a_query, type, results, template, fd in a_queries_with_data:
         tables_from_sentences = []
+        dict_from_sentences = []
         to_totto = []
         if (type == TYPE_FD):
             pk = scenario.pk.name
@@ -182,6 +183,7 @@ def predict(name: str, strategy: str = Form(...), structure: str = Form(...), li
             columnsQuery = getColumnsName(a_query, connection)
             to_totto = to_totto_attribute(results, columnsQuery)
             tables_from_sentences = get_tables_from_sentences(to_totto)
+            dict_from_sentences = get_dict_from_sentences(to_totto)
         if (type == TYPE_FULL):
             # TODO: to_totto_full raises an exception. See the method for details
             columnsQuery = getColumnsName(a_query, connection)
@@ -190,7 +192,7 @@ def predict(name: str, strategy: str = Form(...), structure: str = Form(...), li
         export_results = []
         for i in range(len(results)):
             if len(to_totto) > 0:  # TODO: remove if clause when all the to_totto are ok
-                export_results.append((to_totto[i][0], a_query, to_totto[i][1], template[1], strategy))
+                export_results.append((to_totto[i][0], a_query, dict_from_sentences[i], template[1], strategy))
             # export_results.append((results[i], a_query, to_totto[i], template[0], strategy))
         result.append((index, a_query, type, results, template, fd, tables_from_sentences, export_results))
         index += 1
@@ -204,6 +206,15 @@ def get_tables_from_sentences(to_totto_list):
         example = to_sentence_details_table(data)
         totto_examples.append(example)
     return totto_examples
+
+
+def get_dict_from_sentences(to_totto_list):
+    dict_examples = []
+    for sentence, data in to_totto_list:
+        example = to_sentence_details_dict(data)
+        dict_examples.append(example)
+    return dict_examples
+
 
 def to_sentence_details_table(selectedData):
     table = '<table class="table table-sm table-striped table-bordered table-hover">'
@@ -220,6 +231,17 @@ def to_sentence_details_table(selectedData):
         table += '</tr>'
     table += '</tbody></table>'
     return table
+
+def to_sentence_details_dict(selectedData):
+    rows = []
+    columns = selectedData[0]
+    for pos in range(0, len(columns)):
+        dict = ()
+        data = []
+        for row in selectedData[1:]:
+            data.append(row[pos])
+        rows.append({columns[pos]: data})
+    return rows
 
 def to_totto_full(results, cols):
     to_totto = []
