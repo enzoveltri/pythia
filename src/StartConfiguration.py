@@ -19,9 +19,9 @@ def initPythiaDb():
              "password character varying," \
              "email character varying" \
              ");"
-
+    ## passw admin
     query += "INSERT INTO users (username, full_name, password, email)"\
-             " VALUES ('admin','admin','$2b$12$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW', 'admin@email.it');"
+             " VALUES ('admin','admin','$2b$12$q2A4xvuzVzAQIWIFsTFpletMdkKTH6xdb5gSOmsGz1sjT2qgZQT/q', 'admin@email.it');"
 
     try:
         cur = connection.cursor()
