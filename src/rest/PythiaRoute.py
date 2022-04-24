@@ -120,9 +120,10 @@ def findFDs(name: str, user: User = Depends(get_current_active_user)):
     scenario = getScenarioFromDb(name)
     scenario.findFDs(scenario.dataframe, True)
     fds = scenario.getFDs()
-    rowMeaning = ["has", "in"] ## TODO: parameter for the next function
-    scenario.extendFDs(rowMeaning)
-    updateScenario(name, scenario)
+    if len(fds) > 0:
+        rowMeaning = ["has", "in"] ## TODO: parameter for the next function
+        scenario.extendFDs(rowMeaning)
+        updateScenario(name, scenario)
     return scenario.toJSON()
 
 @pythiaroute.get("/find/ambiguous/{name}")

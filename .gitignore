@@ -24,3 +24,4 @@ src/pythia/.DS_Store
 /data/model/
 .nosync
 src/rest/__pycache__
+src/rest/taneFolder

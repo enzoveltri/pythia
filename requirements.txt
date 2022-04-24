@@ -10,7 +10,7 @@ pydantic==1.9.0
 requests==2.26.0
 scikit_learn==1.0.2
 SQLAlchemy==1.4.23
-starlette==0.19.0
+starlette==0.17.1
 tensorflow==2.8.0
 tensorflow_text==2.8.1
 torch==1.10.1

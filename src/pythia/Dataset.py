@@ -1,3 +1,4 @@
+import copy
 import json
 
 import pandas as pd
@@ -50,13 +51,13 @@ class Dataset:
                 self.pk = self.nameToAttribute[column]
                 break
         if self.pk is None:
-            self.pk = INDEX
-            self.dataframe[self.pk.name] = self.dataframe.index
-            #_pk = INDEX
-            #self.dataframe.insert(0, _pk.name, range(rows))
-            #self.attributes = self._getAttributesFromDF(self.dataframe)
-            #self.nameToAttribute = self._dictNameToAttribute()
-            #self.pk = self.nameToAttribute[_pk.name]
+            #self.pk = INDEX
+            #self.dataframe[self.pk.name] = self.dataframe.index
+            _pk = INDEX
+            self.dataframe.insert(0, _pk.name, range(rows))
+            self.attributes = self._getAttributesFromDF(self.dataframe)
+            self.nameToAttribute = self._dictNameToAttribute()
+            self.pk = self.nameToAttribute[_pk.name]
 
         ## update also the dataframe
         self.dataframe.set_index(self.pk.name, inplace=True)

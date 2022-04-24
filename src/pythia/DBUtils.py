@@ -1,4 +1,5 @@
 import configparser
+import copy
 import json
 import os
 
@@ -11,6 +12,7 @@ from munch import DefaultMunch
 from src.pythia.Dataset import Dataset
 from src.pythia.Metadata import Metadata
 from src.pythia.User import User
+from src.pythia.PandasUtils import updateDFColumns
 
 
 # DB PARAMETER
@@ -72,6 +74,7 @@ def getScenarioFromDb(name):
     dataset.ambiguousAttribute = datasetMunch.ambiguousAttribute
     query = "select * from " + dataset.datasetName
     dataset.dataframe = pd.read_sql(query, connection)
+    updateDFColumns(dataset.dataframe, dataset.attributes)
     return dataset
 
 def getHeadersToQuery(dataset):
