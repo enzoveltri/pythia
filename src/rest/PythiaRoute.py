@@ -6,6 +6,7 @@ import random
 from fastapi import APIRouter, Depends, UploadFile, Form
 
 from src.pythia.Constants import *
+from src.pythia.ExportResult import ExportResult
 from src.pythia.Pythia import find_a_queries
 from src.pythia.T5Engine import T5Engine
 from src.pythia.TemplateFactory import TemplateFactory, getTemplatesByName
@@ -193,9 +194,10 @@ def predict(name: str, strategy: str = Form(...), structure: str = Form(...), li
             to_totto = to_totto_full(results, columnsQuery)
             tables_from_sentences = get_tables_from_sentences(to_totto)
         export_results = []
+        dict
         for i in range(len(results)):
             if len(to_totto) > 0:  # TODO: remove if clause when all the to_totto are ok
-                export_results.append((to_totto[i][0], a_query, dict_from_sentences[i], template[1], strategy))
+                export_results.append(ExportResult(to_totto[i][0], a_query, template[1], strategy, dict_from_sentences[i]))
             # export_results.append((results[i], a_query, to_totto[i], template[0], strategy))
         result.append((index, a_query, type, results, template, fd, tables_from_sentences, export_results))
         index += 1
