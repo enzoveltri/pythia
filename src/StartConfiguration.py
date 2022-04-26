@@ -1,11 +1,19 @@
+import sys
+from pathlib import Path
+
 import psycopg2
 import configparser, os
+from passlib.context import CryptContext
+
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
 # service methods
-def initPythiaDb():
-    config = readConfigParameters()
+def initPythiaDb(configFilePath):
+    config = readConfigParameters(configFilePath)
     connection = getDBConnection(config['db']['user'], config['db']['password'], config['db']['host'], config['db']['port'], config['db']['dbname'])
+    hash_password = pwd_context.hash('admin')
     query = "CREATE TABLE scenari (" \
             "name character varying NOT NULL," \
             "username character varying NOT NULL," \
@@ -21,7 +29,7 @@ def initPythiaDb():
              ");"
     ## passw admin
     query += "INSERT INTO users (username, full_name, password, email)"\
-             " VALUES ('admin','admin','$2b$12$q2A4xvuzVzAQIWIFsTFpletMdkKTH6xdb5gSOmsGz1sjT2qgZQT/q', 'admin@email.it');"
+             " VALUES ('admin','admin','" + hash_password + "', 'admin@email.it');"
 
     try:
         cur = connection.cursor()
@@ -29,16 +37,15 @@ def initPythiaDb():
         cur.close()
         connection.commit()
     except (Exception, psycopg2.DatabaseError) as error:
-        print("Errore: ", error)
+        print("Error: ", error)
         connection.rollback()
     finally:
         if connection is not None:
             connection.close()
 
 
-def readConfigParameters():
+def readConfigParameters(configFilePath):
     config = configparser.ConfigParser()
-    configFilePath = "./config.ini"
     config.read(configFilePath)
     return config
 
@@ -47,6 +54,14 @@ def getDBConnection(user_uenc, pw_uenc, host, port, dbname):
     connection = psycopg2.connect(user = user_uenc, password = pw_uenc, host = host, port = port, database = dbname)
     return connection
 
+
+def testDBConnection(user_uenc, pw_uenc, host, port, dbname):
+    try:
+        conn = psycopg2.connect(user = user_uenc, password = pw_uenc, host = host, port = port, database = dbname, connect_timeout=1)
+        conn.close()
+        return True
+    except:
+        return False
 
 # START CONFIGURATION
 print("*** Welcome to Pythia configuration ***")
@@ -60,15 +75,21 @@ host = str(input("Enter host: "))
 port = int(input("Enter port: "))
 dbname = str(input("Enter DB name: "))
 
+if not testDBConnection(user, password, host, port, dbname):
+    print("Error DB connection")
+    sys.exit()
 
 config = configparser.ConfigParser()
-configFilePath = "./config.ini"
-if not os.path.exists(configFilePath):
+configFileName = "config.ini"
+directory = Path(os.path.dirname(os.path.realpath(__file__)))
+path = os.path.join(directory.parent.absolute(), configFileName)
+print("*** path: ", path)
+if not os.path.exists(path):
     config['db'] = {'user': user, 'password': password, 'host': host, 'port': port, 'dbname': dbname}
-    config.write(open(configFilePath, 'w'))
+    config.write(open(path, 'w'))
 
 print("*** Creating tables... ")
-initPythiaDb()
+initPythiaDb(path)
 print("*** End of configuration ***")
 
 
