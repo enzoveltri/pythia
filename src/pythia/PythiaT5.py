@@ -3,13 +3,13 @@ import random
 import pandas as pd
 
 from src.pythia import Constants
-from src.pythia.DBUtils import getDBConnection, getEngine
+from src.pythia.DBUtils import getDBConnection, getEngine, getColumnsName
 from src.pythia.Dataset import Dataset
-from src.pythia.Pythia import toListCompositeKeys
+from src.pythia.Pythia import toListCompositeKeys, find_a_queries
 from src.pythia.PythiaExample import PythiaExample
 from src.pythia.StringUtils import normalizeAscii
 from src.pythia.T5Engine import T5Engine
-from src.pythia.Constants import STRATEGY_SCHEMA
+from src.pythia.Constants import STRATEGY_SCHEMA, TYPE_ROW, TYPE_ATTRIBUTE, TYPE_FULL, MATCH_TYPE_CONTRADICTING, MATCH_TYPE_UNIFORM_TRUE
 from munch import DefaultMunch
 from pandasql import sqldf
 import time
@@ -17,6 +17,8 @@ import time
 from src.pythia.T5SentenceGenerator import T5SentenceGenerator
 
 ### DB CONNECTION POSTGRESQL
+from src.pythia.TemplateFactory import TemplateFactory
+
 dialect = "postgresql"
 user_uenc = "postgres"
 pw_uenc = "postgres"
@@ -215,30 +217,34 @@ def attr_amb(dataset, pysqldf, sentenceGenerator, operator, matchType, limit, li
             attr2Cell = row["AMB2"]
             if matchType == Constants.MATCH_TYPE_CONTRADICTING:
                 toTotto = tottoSentence(dataset.getDatasetName(), dataset.concept, pkCell, pk.name, attr1Cell, label)
-                sentence = sentenceGenerator.predict(toTotto)
+                sentence = ""
+                if sentenceGenerator is not None: sentence = sentenceGenerator.predict(toTotto)
                 pythiaExample = PythiaExample(dfSentence, sentence, q, toTotto, Constants.TYPE_ATTRIBUTE, operator, matchType)
                 examples.append(pythiaExample)
                 counter += 1
                 toTotto = tottoSentence(dataset.getDatasetName(), dataset.concept, pkCell, pk.name, attr2Cell, label)
-                sentence = sentenceGenerator.predict(toTotto)
+                if sentenceGenerator is not None: sentence = sentenceGenerator.predict(toTotto)
                 pythiaExample = PythiaExample(dfSentence, sentence, q, toTotto, Constants.TYPE_ATTRIBUTE, operator, matchType)
                 examples.append(pythiaExample)
                 counter += 1
             if matchType == Constants.MATCH_TYPE_UNIFORM_TRUE:
                 ##attr1Cell or attr2Cell have the same value
                 toTotto = tottoSentence(dataset.getDatasetName(), dataset.concept, pkCell, pk.name, attr2Cell, label)
-                sentence = sentenceGenerator.predict(toTotto)
+                sentence = ""
+                if sentenceGenerator is not None: sentence = sentenceGenerator.predict(toTotto)
                 pythiaExample = PythiaExample(dfSentence, sentence, q, toTotto, Constants.TYPE_ATTRIBUTE, operator, matchType)
                 examples.append(pythiaExample)
                 counter += 1
             if matchType == Constants.MATCH_TYPE_UNIFORM_FALSE:
                 cell = getValueUniformFalse([attr1Cell, attr2Cell], domain)
                 toTotto = tottoSentence(dataset.getDatasetName(), dataset.concept, pkCell, pk.name, cell, label)
-                sentence = sentenceGenerator.predict(toTotto)
+                sentence = ""
+                if sentenceGenerator is not None: sentence = sentenceGenerator.predict(toTotto)
                 pythiaExample = PythiaExample(dfSentence, sentence, q, toTotto, Constants.TYPE_ATTRIBUTE, operator, matchType)
                 examples.append(pythiaExample)
                 counter += 1
             if limitPerType != -1 and counter >= limitPerType : break
+        #print("Examples so far: ", len(examples))
     return examples
 
 #######################
@@ -294,29 +300,34 @@ def row_amb(dataset, pysqldf,sentenceGenerator, operator, matchType, limit, limi
                 attr2Value = row['A2']
                 if matchType == Constants.MATCH_TYPE_CONTRADICTING:
                     toTotto = tottoSentence(dataset.getDatasetName(), dataset.concept, ckValue, ckAttr.name, attr1Value, attr.name)
-                    sentence = sentenceGenerator.predict(toTotto)
+                    sentence = ""
+                    if sentenceGenerator is not None: sentence = sentenceGenerator.predict(toTotto)
                     pythiaExample = PythiaExample(dfSentence, sentence, q, toTotto, Constants.TYPE_ROW, operator, matchType)
                     examples.append(pythiaExample)
                     counter += 1
                     toTotto = tottoSentence(dataset.getDatasetName(), dataset.concept, ckValue, ckAttr.name, attr2Value, attr.name)
-                    sentence = sentenceGenerator.predict(toTotto)
+                    sentence = ""
+                    if sentenceGenerator is not None: sentence = sentenceGenerator.predict(toTotto)
                     pythiaExample = PythiaExample(dfSentence, sentence, q, toTotto, Constants.TYPE_ROW, operator, matchType)
                     examples.append(pythiaExample)
                     counter += 1
                 if matchType == Constants.MATCH_TYPE_UNIFORM_TRUE:
                     toTotto = tottoSentence(dataset.getDatasetName(), dataset.concept, ckValue, ckAttr.name, attr1Value,attr.name)
-                    sentence = sentenceGenerator.predict(toTotto)
+                    sentence = ""
+                    if sentenceGenerator is not None: sentence = sentenceGenerator.predict(toTotto)
                     pythiaExample = PythiaExample(dfSentence, sentence, q, toTotto, Constants.TYPE_ROW, operator, matchType)
                     examples.append(pythiaExample)
                     counter += 1
                 if matchType == Constants.MATCH_TYPE_UNIFORM_FALSE:
                     cell = getValueUniformFalse([attr1Value, attr2Value], domain)
                     toTotto = tottoSentence(dataset.getDatasetName(), dataset.concept, ckValue, ckAttr.name, cell, attr.name)
-                    sentence = sentenceGenerator.predict(toTotto)
+                    sentence = ""
+                    if sentenceGenerator is not None: sentence = sentenceGenerator.predict(toTotto)
                     pythiaExample = PythiaExample(dfSentence, sentence, q, toTotto, Constants.TYPE_ROW, operator, matchType)
                     examples.append(pythiaExample)
                     counter += 1
                 if limitPerType != -1 and counter >= limitPerType : break
+            #print("Examples so far: ", len(examples))
     return examples
 
 #######################
@@ -380,14 +391,16 @@ def full_amb(dataset, pysqldf, sentenceGenerator, operator, matchType, limit, li
                             valueAmb = row[attr]
                             #print(subPKCell, ckAttr.name, valueAmb, label)
                             toTotto = tottoSentence(dataset.getDatasetName(), dataset.concept, subPKCell, ckAttr.name, valueAmb, label)
-                            sentence = sentenceGenerator.predict(toTotto)
+                            sentence = ""
+                            if sentenceGenerator is not None: sentence = sentenceGenerator.predict(toTotto)
                             pythiaExample = PythiaExample(dfSentence, sentence, q, toTotto, Constants.TYPE_FULL, operator, matchType)
                             examples.append(pythiaExample)
                             counter += 1
                     if matchType == Constants.MATCH_TYPE_UNIFORM_TRUE:
                         valueAmb = row["AMB_1_1"]
                         toTotto = tottoSentence(dataset.getDatasetName(), dataset.concept, subPKCell, ckAttr.name, valueAmb, label)
-                        sentence = sentenceGenerator.predict(toTotto)
+                        sentence = ""
+                        if sentenceGenerator is not None: sentence = sentenceGenerator.predict(toTotto)
                         pythiaExample = PythiaExample(dfSentence, sentence, q, toTotto, Constants.TYPE_FULL, operator, matchType)
                         examples.append(pythiaExample)
                         counter += 1
@@ -397,11 +410,13 @@ def full_amb(dataset, pysqldf, sentenceGenerator, operator, matchType, limit, li
                             ambValues.append(row[attr])
                         valueAmb = getValueUniformFalse(ambValues, domain)
                         toTotto = tottoSentence(dataset.getDatasetName(), dataset.concept, subPKCell, ckAttr.name, valueAmb, label)
-                        sentence = sentenceGenerator.predict(toTotto)
+                        sentence = ""
+                        if sentenceGenerator is not None: sentence = sentenceGenerator.predict(toTotto)
                         pythiaExample = PythiaExample(dfSentence, sentence, q, toTotto, Constants.TYPE_FULL, operator, matchType)
                         examples.append(pythiaExample)
                         counter += 1
                     if limitPerType != -1 and counter >= limitPerType : break
+            #print("Examples so far: ", len(examples))
     return examples
 
 ###################
@@ -521,33 +536,149 @@ if __name__ == '__main__': ## sentence generation
     examples = []
     sentenceGenerator = T5SentenceGenerator()
     #sentenceGenerator = None
-    limit = 50
-    examplePerType = 50
+    limit = 10
+    examplePerType = 1
     useFDs = False
-    calculateAttribute = False
-    calculateRow = False
-    calculateFull = False
+    calculateAttribute = True
+    calculateRow = True
+    calculateFull = True
     calculateNoAmb = True
     #dataset.concept = "heart"
     #dataset.datasetName = "heart"
-    dataset.concept = "abalone"
-    dataset.datasetName = "abalone"
+    dataset.concept = "superstore"
+    dataset.datasetName = "superstore"
     #operators = ["<", ">"]
     operators = ["="]
     #mts = [Constants.MATCH_TYPE_CONTRADICTING, Constants.MATCH_TYPE_UNIFORM_TRUE, Constants.MATCH_TYPE_UNIFORM_FALSE]
     mts = [Constants.MATCH_TYPE_CONTRADICTING]
+    start = time.time()
     for op in operators:
         for mt in mts:
             if calculateAttribute:
+                print("*** Attribute")
                 examples += attr_amb(dataset, pysqldf,sentenceGenerator, op, mt, limit, examplePerType)
+                print("*** Total attribute:", len(examples))
             if calculateRow:
+                print("*** Row")
                 examples += row_amb(dataset, pysqldf,sentenceGenerator, op, mt, limit, examplePerType, useFDs)
+                print("*** Total row:", len(examples))
             if calculateFull:
+                print("*** Full")
                 examples += full_amb(dataset, pysqldf,sentenceGenerator, op, mt, limit, examplePerType, useFDs)
+                print("*** Total full:", len(examples))
         if calculateNoAmb:
             examples += no_amb(dataset, pysqldf,sentenceGenerator, op, mt, limit, examplePerType)
+    print("Examples generated: ", len(examples))
+    end = time.time()
+    print("Time elapsed: ", (end - start))
     ## json export
-    datasetJson = name + "_sentence.json"
+    save = True
+    if save:
+        datasetJson = name + "_sentence.json"
+        filePath = "/Users/enzoveltri/Downloads/datasets/"
+        jsonFile = filePath + datasetJson
+        with open(jsonFile, 'w') as outfile:
+            outfile.write("[")
+            count = 1
+            numExamples = len(examples)
+            for example in examples:
+                if count < numExamples:
+                    outfile.write(example.toJSON()+"\n,\n")
+                else:
+                    outfile.write(example.toJSON() + "\n")
+                count += 1
+            outfile.write("]")
+        print("Saved json: ", jsonFile)
+
+#####################
+## PYTHIA TEMPLATES
+#####################
+
+def to_df_attribute(row, cols):
+    to_df = {}
+    sentence = row[0]
+    to_df[cols[1]] = [row[1], row[2]]
+    to_df[cols[3]] = [row[3], row[4]]
+    to_df[cols[5]] = [row[5], row[6]]
+    return sentence, to_df
+
+def to_df_row(row, cols):
+    to_df = {}
+    sentence = row[0]
+    for i in range(1, len(cols), 2):
+        to_df[cols[i]] = [row[i], row[i+1]]
+    return sentence, to_df
+
+def to_df_full(row, cols):
+    to_df = {}
+    sentence = row[0]
+    for i in range(1, len(cols), 3):
+        to_df[cols[i]] = [row[i], row[i+1], row[i+2]]
+    return sentence, to_df
+
+if __name__ == '__main__xx': ## sentence generation from Templates
+    DB_USER = "postgres"
+    DB_PASSWORD = "postgres"
+    DB_HOST = "localhost"
+    DB_PORT = "5432"
+    DB_NAME = "ambiguities"
+
+    name = "mushroom"
+    #name = "heart_2020"
+    datasetJson = name + ".json"
+    filePath = "/Users/enzoveltri/Downloads/datasets/"
+    jsonFile = filePath + datasetJson
+    dict = dict()
+    print("*** Load: ", jsonFile)
+    with open(jsonFile) as json_file:
+        dict = json.load(json_file)
+    connection = getDBConnection(DB_USER, DB_PASSWORD, DB_HOST, DB_PORT, DB_NAME)
+    datasetMunch = DefaultMunch.fromDict(dict, Dataset)
+    dataset = Dataset(name)
+    dataset.datasetName = datasetMunch.datasetName
+    dataset.attributes = datasetMunch.attributes
+    dataset.pk = datasetMunch.pk
+    dataset.nameToAttribute = datasetMunch.nameToAttribute
+    dataset.fds = datasetMunch.fds
+    dataset.compositeKeys = datasetMunch.compositeKeys
+    dataset.ambiguousAttribute = datasetMunch.ambiguousAttribute
+    query = "select * from " + dataset.datasetName
+    #dataset.dataframe = pd.read_sql(query, connection, index_col=dataset.pk.normalizedName)
+    dataset.dataframe = pd.read_sql(query, connection)
+    templateFactory = TemplateFactory()
+    # pick default templates
+    rowsTemplates = templateFactory.getTemplatesByType(TYPE_ROW)
+    attributeTemplates = templateFactory.getTemplatesByType(TYPE_ATTRIBUTE)
+    fullTemplates = templateFactory.getTemplatesByType(TYPE_FULL)
+    #matches = [MATCH_TYPE_CONTRADICTING, MATCH_TYPE_UNIFORM_TRUE]
+    matches = [MATCH_TYPE_CONTRADICTING]
+    templates = [rowsTemplates, attributeTemplates, fullTemplates]
+    examples = []
+    for matchType in matches:
+        for template in templates:
+            a_queries, a_queries_with_data = find_a_queries(dataset, template, matchType, connection,
+                                                            operators=["=", ">", "<"], functions=["min", "max"],
+                                                            executeQuery=True, limitQueryResults=10, shuffleQuery=True)
+            print("Total A-Queries Generated:", len(a_queries))
+            print("Differents A-Queries: ", len(set(a_queries)))
+            #for aq in a_queries:
+            #    print(aq)
+            for a_query, type, results, template_in_results, fd in a_queries_with_data:
+                columnsQuery = getColumnsName(a_query, connection)
+                for result in results:
+                    sentence = ""
+                    data = {}
+                    if type == TYPE_ATTRIBUTE:
+                        sentence, data = to_df_attribute(result, columnsQuery)
+                    if type == TYPE_ROW:
+                        sentence, data = to_df_row(result, columnsQuery)
+                    if type == TYPE_FULL:
+                        sentence, data = to_df_full(result, columnsQuery)
+                    qMod = a_query.split("ORDER BY random()", 1)[0].replace("\n", " ")
+                    pythiaExample = PythiaExample(pd.DataFrame.from_dict(data), sentence, qMod, "", type, ">", matchType)
+                    examples.append(pythiaExample)
+    ## json export
+    datasetJson = name + "_template_sentence.json"
     filePath = "/Users/enzoveltri/Downloads/datasets/"
     jsonFile = filePath + datasetJson
     with open(jsonFile, 'w') as outfile:
