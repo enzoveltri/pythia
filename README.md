@@ -30,3 +30,6 @@ To execute the backend make sure you have a Postresql instance installed.
 
 [![Coming Soon](https://img.youtube.com/vi/gLqu_Mvtj9w/maxresdefault.jpg)](https://youtu.be/gLqu_Mvtj9w)
 
+
+# References
+[1] Unsupervised Generation of Ambiguous Textual Claims from Relational Data; Veltri Enzo, Santoro Donatello, Badaro Gilbert, Saeed Mohammed and Papotti Paolo. SIGMOD, 2022. Demo Paper
