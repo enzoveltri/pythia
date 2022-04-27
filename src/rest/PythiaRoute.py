@@ -183,6 +183,7 @@ def predict(name: str, strategy: str = Form(...), structure: str = Form(...), li
             columnsQuery = getColumnsName(a_query, connection)
             to_totto = to_totto_row(results, columnsQuery)
             tables_from_sentences = get_tables_from_sentences(to_totto)
+            dict_from_sentences = get_dict_from_sentences(to_totto)
         if (type == TYPE_ATTRIBUTE):
             columnsQuery = getColumnsName(a_query, connection)
             to_totto = to_totto_attribute(results, columnsQuery)
@@ -193,12 +194,12 @@ def predict(name: str, strategy: str = Form(...), structure: str = Form(...), li
             columnsQuery = getColumnsName(a_query, connection)
             to_totto = to_totto_full(results, columnsQuery)
             tables_from_sentences = get_tables_from_sentences(to_totto)
+            dict_from_sentences = get_dict_from_sentences(to_totto)
         export_results = []
-        dict
         for i in range(len(results)):
-            if len(to_totto) > 0:  # TODO: remove if clause when all the to_totto are ok
-                export_results.append(ExportResult(to_totto[i][0], a_query, template[1], strategy, dict_from_sentences[i]))
-            # export_results.append((results[i], a_query, to_totto[i], template[0], strategy))
+            if len(dict_from_sentences) > 0:  # TODO: remove if clause when all the to_totto are ok
+                export_results.append(ExportResult(results[i][0], a_query, template[1], strategy, dict_from_sentences[i]))
+            # export_results.append(ExportResult(results[i][0], a_query, template[1], strategy, dict_from_sentences[i]))
         result.append((index, a_query, type, results, template, fd, tables_from_sentences, export_results))
         index += 1
     return result

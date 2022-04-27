@@ -20,7 +20,7 @@ def readConfigParameters():
     config = configparser.ConfigParser()
     configFilePath = "../../config.ini"
     if not os.path.exists(configFilePath):
-        print("File non trovato!")
+        print("File not found")
     config.read(configFilePath)
     return config
 
