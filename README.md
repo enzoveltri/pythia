@@ -16,7 +16,13 @@ The problem stems from the existing training corpora, which focus on examples wi
 
 
 # Demo
-GUI available at https://github.com/antoniovizzuso/pythia-frontend
+Front-end available at https://github.com/antoniovizzuso/pythia-frontend
+To execute the backend make sure you have a Postresql instance installed.
+0) Install the requirements.txt
+1) Create a postgresql database (e.g. pythia)
+2) Run src/StartConfiguration.py and follow the instruction. The script will create an admin user. Feel free to change the admin password in the script.
+3) Start the Rest server in src/rest/ServerRest.py
+4) Start the front-end following the instruction at https://github.com/antoniovizzuso/pythia-frontend
 
 [![Coming Soon](https://img.youtube.com/vi/gLqu_Mvtj9w/maxresdefault.jpg)](https://youtu.be/gLqu_Mvtj9w)
 
