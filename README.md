@@ -16,7 +16,7 @@ The problem stems from the existing training corpora, which focus on examples wi
 
 
 # Demo
-Coming Soon
+GUI available at https://github.com/antoniovizzuso/pythia-frontend
 
 [![Coming Soon](https://img.youtube.com/vi/gLqu_Mvtj9w/maxresdefault.jpg)](https://youtu.be/gLqu_Mvtj9w)
 
