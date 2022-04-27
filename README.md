@@ -1,7 +1,11 @@
-# pythia
+# Pythia
 
-Applications such as computational fact checking and data-to-text generation exploit the relationship between relational data and natural language text. Despite promising results in these areas, state of the art solutions simply fail in managing "data-ambiguity", i.e., the case when there are multiple interpretations of the relationship between text and data. 
-The problem stems from the existing training corpora, which focus on examples with precise and complete sentences, thus leaving the target applications unprepared on how to handle ambiguous cases. To tackle this problem, we present Pythia, a system that, given a table D, generates sentences that contain factual ambiguities w.r.t. the data in D. We first formulate the novel problem of generating sentences with data ambiguities and propose SQL queries to achieve such task. We then introduce deep learning methods over the relational data to automatically identify ambiguities, so that any table can be used as input. To show the positive impact of corpora of ambiguous sentences, we extend state-of-the-art target NLP applications for data-to-text generation and fact checking. A large set of experiments with real tables shows that extending the training data with Pythia's sentences enables the applications to drastically improve their qualitative performance.
+Several applications, such as text-to-SQL and computational fact checking, exploit the relationship between relational data and natural language text. However, state of the art solutions simply fail in managing "data-ambiguity", i.e., the case when there are multiple interpretations of the relationship between text and data. 
+Given the ambiguity in language, text can be mapped to different subsets of data, but existing training corpora only have examples in which every sentence/question is annotated precisely w.r.t. the relation.  This unrealistic assumption leaves the target applications unable to handle ambiguous cases. 
+
+To tackle this problem, we present an end-to-end solution that, given a table D, generates examples that consist of text, annotated with its data evidence, with factual ambiguities w.r.t. the data in D. We formulate the problem of profiling relational tables to identify row and attribute data ambiguity. For the latter, we propose a deep learning method that identifies every pair of data ambiguous attributes and a label that describes both columns. Such metadata is then used to generate examples with data ambiguities for any input table.
+To enable scalability, we finally introduce a SQL approach that allows the generation of millions of examples in seconds.
+We show the high accuracy of our solution in profiling relational tables and report on how our automatically generated examples lead to drastic quality improvements in two fact-checking applications, including a website with thousands of users, and in a text-to-SQL system.
 
 
 # Repository
