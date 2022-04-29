@@ -10,7 +10,8 @@ We show the high accuracy of our solution in profiling relational tables and rep
 
 # Repository
 - Data used in the paper:
-	1) Ambiguity discovery. Ambiguity dataset (train and test) for schema and data available at:
+	1) Annotations: contains the singolar individual annotation from our user study and the evaluation metrics. Such annotation are the used to generate the test data for the Ambiguity discovery module. 
+	2) Ambiguity discovery. Ambiguity dataset (train and test) for schema and data available at:
 		- Schema: https://drive.google.com/drive/folders/1VLDywO4zD1fbzFBiEbB-m-BHOv0_BBIB?usp=sharing. The dataset is generated with the ```notebooks/Schema-Dataset Generation WDC```
 		- Data: https://drive.google.com/drive/folders/1C2qw52QKl--9PiyDoN1FXsQjwzq8prqQ?usp=sharing. The dataset is generated with the ```notebooks/Data-Dataset Generation WDC```
 - Notebooks folder contains the following notebooks:
