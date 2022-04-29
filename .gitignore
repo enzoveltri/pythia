@@ -25,3 +25,4 @@ src/pythia/.DS_Store
 .nosync
 src/rest/__pycache__
 src/rest/taneFolder
+config.ini
