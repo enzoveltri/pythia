@@ -68,3 +68,20 @@ def getTemplatesByName(templates, name):
         if (templateName == name):
             templatesByType.append((template, templateType, printF))
     return templatesByType
+
+
+def getOperatorsFromTemplate(template):
+    printF = template[2]
+    operators = []
+    if printF is None:
+        return operators
+    if printF[0] != '':
+        operators.append('=')
+    if printF[1] != '':
+        operators.append('>')
+    if printF[2] != '':
+        operators.append('<')
+    if printF[3] != '':
+        operators.append('<>')
+    return operators
+

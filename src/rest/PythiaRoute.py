@@ -9,7 +9,7 @@ from src.pythia.Constants import *
 from src.pythia.ExportResult import ExportResult
 from src.pythia.Pythia import find_a_queries
 from src.pythia.T5Engine import T5Engine
-from src.pythia.TemplateFactory import TemplateFactory, getTemplatesByName
+from src.pythia.TemplateFactory import TemplateFactory, getTemplatesByName, getOperatorsFromTemplate
 from src.rest.Authentication import User, get_current_active_user
 from src.pythia.DBUtils import getScenarioListFromDb, getScenarioFromDb, deleteScenarioFromDb, existsDTModelInDb, \
     insertScenario, getEngine, updateScenario, updateTemplates, getTemplatesFromDb, getDBConnection, getColumnsName, \
@@ -160,8 +160,10 @@ def predict(name: str, strategy: str = Form(...), structure: str = Form(...), li
     print("*** Strategy: ", strategy)
     print("*** Structure: ", structure)
     templates = getTemplatesByName(totalTemplates, structure)
+    operators = getOperatorsFromTemplate(templates[0])
+    print("*** Operators: ", operators)
     a_queries, a_queries_with_data = find_a_queries(scenario, templates, strategy, connection,
-                                                    operators=["=", ">", "<"], functions=["min", "max"],
+                                                    operators, functions=["min", "max"],
                                                     executeQuery=True, limitQueryResults=limitResults, shuffleQuery=True)
     print("*** Total A-Queries Generated:", len(a_queries))
     print("*** Differents A-Queries: ", len(set(a_queries)))

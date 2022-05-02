@@ -24,6 +24,8 @@ def negOperator(operator):
         return "<"
     if operator == "<":
         return ">"
+    if operator == "<>":
+        return "="
     print("**** KEY ERROR: ", operator)
     return None
 
