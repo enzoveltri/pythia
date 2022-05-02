@@ -188,7 +188,7 @@ def predict(name: str, strategy: str = Form(...), structure: str = Form(...), li
             dict_from_sentences = get_dict_from_sentences(to_totto)
         if (type == TYPE_ATTRIBUTE):
             columnsQuery = getColumnsName(a_query, connection)
-            to_totto = to_totto_attribute(results, columnsQuery)
+            to_totto = to_totto_row(results, columnsQuery)
             tables_from_sentences = get_tables_from_sentences(to_totto)
             dict_from_sentences = get_dict_from_sentences(to_totto)
         if (type == TYPE_FULL):
@@ -271,24 +271,24 @@ def to_totto_full(results, cols):
         to_totto.append((sentence, data))
     return to_totto
 
+
 def to_totto_row(results, cols):
     to_totto = []
     for row in results:
         sentence = row[0]
-        t0 = (cols[1], cols[3], cols[5])
-        t1 = (row[1], row[3], row[5])
-        t2 = (row[2], row[4], row[6])
-        data = [t0, t1, t2]
-        to_totto.append((sentence, data))
-    return to_totto
-
-def to_totto_attribute(results, cols):
-    to_totto = []
-    for row in results:
-        sentence = row[0]
-        t0 = (cols[1], cols[3], cols[5])
-        t1 = (row[1], row[3], row[5])
-        t2 = (row[2], row[4], row[6])
+        total = len(row)
+        i = 1
+        t0 = []
+        t1 = []
+        t2 = []
+        while i < total:
+            t0.append(cols[i])
+            t1.append(row[i])
+            t2.append(row[i + 1])
+            i += 2
+        t0 = tuple(t0)
+        t1 = tuple(t1)
+        t2 = tuple(t2)
         data = [t0, t1, t2]
         to_totto.append((sentence, data))
     return to_totto
