@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends, UploadFile, Form
 
 from src.pythia.Constants import *
 from src.pythia.ExportResult import ExportResult
-from src.pythia.Pythia import find_a_queries
+from src.pythia.Pythia import find_a_queries, checkWithData
 from src.pythia.T5Engine import T5Engine
 from src.pythia.TemplateFactory import TemplateFactory, getTemplatesByName, getOperatorsFromTemplate
 from src.rest.Authentication import User, get_current_active_user
@@ -168,8 +168,42 @@ def predict(name: str, strategy: str = Form(...), structure: str = Form(...), li
     print("*** Total A-Queries Generated:", len(a_queries))
     print("*** Differents A-Queries: ", len(set(a_queries)))
 
-    result = []
+    result = get_results(connection, strategy, scenario, a_queries_with_data)
     tName = scenario.datasetName
+    return result
+
+
+@pythiaroute.post("/predict/single/{name}/{index}")
+def predictSingleAQuery(name: str, index: int, aQuery: str = Form(...), strategy: str = Form(...), structure: str = Form(...), limitResults: int = Form(...), user: User = Depends(get_current_active_user)):
+    connection = getDBConnection(getDbUser(), getDbPassword(), getDbHost(), getDbPort(), getDbName())
+    scenario = getScenarioFromDb(name)
+    totalTemplates = getTemplatesFromDb(name)
+    template = getTemplatesByName(totalTemplates, structure)[0]
+    type = template[1]
+    fd = None #TODO: manage fds
+    a_queries_with_data = []
+    stored_results = []
+
+    print("*** name: ", name)
+    print("*** index: ", index)
+    print("*** aQuery: ", aQuery)
+    print("*** strategy: ", strategy)
+    print("*** structure: ", structure)
+    print("*** limitResults: ", limitResults)
+    print("*** type: ", type)
+
+    checkWithData(aQuery, type, connection, a_queries_with_data, stored_results, template, fd, 0) #TODO: manage limit results inside checkWithData function
+
+    print("*** a_queries_with_data: ", a_queries_with_data)
+    print("*** stored_results: ", stored_results)
+
+    result = get_results(connection, strategy, scenario, stored_results)
+    tName = scenario.datasetName
+    return result[0]
+
+
+def get_results(connection, strategy, scenario, a_queries_with_data):
+    result = []
     index = 0
     for a_query, type, results, template, fd in a_queries_with_data:
         tables_from_sentences = []
@@ -200,7 +234,8 @@ def predict(name: str, strategy: str = Form(...), structure: str = Form(...), li
         export_results = []
         for i in range(len(results)):
             if len(dict_from_sentences) > 0:  # TODO: remove if clause when all the to_totto are ok
-                export_results.append(ExportResult(results[i][0], a_query, template[1], strategy, dict_from_sentences[i]))
+                export_results.append(
+                    ExportResult(results[i][0], a_query, template[1], strategy, dict_from_sentences[i]))
             # export_results.append(ExportResult(results[i][0], a_query, template[1], strategy, dict_from_sentences[i]))
         result.append((index, a_query, type, results, template, fd, tables_from_sentences, export_results))
         index += 1
