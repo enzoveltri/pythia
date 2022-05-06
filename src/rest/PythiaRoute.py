@@ -210,11 +210,11 @@ def get_results(connection, strategy, scenario, a_queries_with_data):
         dict_from_sentences = []
         to_totto = []
         if (type == TYPE_FD):
-            pk = scenario.pk.name
+            tableName = scenario.datasetName
             # TODO: to_totto_fd raises an exception. See the method for details
-            # fdTemplateQuery = "SELECT b1.$LHS$,b1.$RHS$, b1.$PK$ FROM $TABLE$ b1 WHERE b1.$RHS$ = $VALUE$"
-            # to_totto = to_totto_fd(results, fdTemplateQuery, tName, pk, connection, fd)
-            # tables_from_sentences = get_tables_from_sentences(to_totto)
+            columnsQuery = getColumnsName(a_query, connection)
+            to_totto = to_totto_fd(results, columnsQuery, tableName, connection)
+            tables_from_sentences = get_tables_from_sentences(to_totto)
         if (type == TYPE_ROW):
             columnsQuery = getColumnsName(a_query, connection)
             to_totto = to_totto_row(results, columnsQuery)
@@ -328,29 +328,22 @@ def to_totto_row(results, cols):
         to_totto.append((sentence, data))
     return to_totto
 
-def to_totto_fd(results, fdTemplateQuery, tableName , pk, connection, fd):
+def to_totto_fd(results, columnsQuery, tName, connection):
     to_totto = []
-    print("*** fd: ", fd)
-    lhsAttr = fd[0][0]
-    rhsAttr = fd[0][1]
     for row in results:
         sentence = row[0]
-        lhs = row[1]
-        rhs = row[2]
-        #print(sentence, lhs, rhs)
-        queryData = fdTemplateQuery
-        print("*** lhsAttr: ", lhsAttr)
-        print("*** rhsAttr: ", rhsAttr)
-        print("*** rhs: ", rhs)
-        queryData = queryData.replace('$LHS$', ('"' + lhsAttr + '"')) #TODO: this line fails because it's a list
-        queryData = queryData.replace('$RHS$', ('"' + rhsAttr + '"')) #TODO: this line fails because it's a list
-        queryData = queryData.replace('$TABLE$', tableName)
-        queryData = queryData.replace('$VALUE$', "'"+rhs+"'")
-        queryData = queryData.replace('$PK$', ('"' + pk + '"'))
-        dataTable = executeQueryBatch(queryData, connection)
-        cQ = getColumnsName(queryData, connection)
-        tupleColumn = tuple(cQ)
-        dataTable.insert(0, tupleColumn)
+        fdAttrs = columnsQuery[1:]
+        rhsAttr = columnsQuery[-1]
+        rhsValue = row[-1]
+        queryFD = "SELECT " + ", ".join(fdAttrs) + ", count(*) FROM " + tName + " WHERE " + rhsAttr + " = '" + rhsValue + "' GROUP BY " +  ", ".join(fdAttrs)
+        fdResult = executeQueryBatch(queryFD, connection)
+        dataTable = []
+        tHeader = fdAttrs + ["count"]
+        tColumns = tuple(tHeader)
+        dataTable.append(tColumns)
+        for rdf in fdResult:
+            t = tuple(rdf)
+            dataTable.append(t)
         to_totto.append((sentence, dataTable))
     return to_totto
 
