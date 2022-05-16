@@ -27,6 +27,13 @@ def initPythiaDb(configFilePath):
              "password character varying," \
              "email character varying" \
              ");"
+
+    query += "CREATE TABLE ambiguous_cache (" \
+             "attr1 character varying," \
+             "attr2 character varying," \
+             "label character varying" \
+             ");"
+
     ## passw admin
     query += "INSERT INTO users (username, full_name, password, email)"\
              " VALUES ('admin','admin','" + hash_password + "', 'admin@email.it');"
@@ -86,6 +93,7 @@ path = os.path.join(directory.parent.absolute(), configFileName)
 print("*** path: ", path)
 if not os.path.exists(path):
     config['db'] = {'user': user, 'password': password, 'host': host, 'port': port, 'dbname': dbname}
+    config['params'] = {'cache': True}
     config.write(open(path, 'w'))
 
 print("*** Creating tables... ")

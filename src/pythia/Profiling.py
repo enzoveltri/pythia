@@ -4,6 +4,8 @@ import os
 from itertools import chain, combinations
 from functools import cmp_to_key
 from pandas.core.dtypes.common import is_numeric_dtype
+
+from src.pythia import DBUtils
 from src.pythia.Constants import NUMERICAL
 from src.pythia.T5Engine import T5Engine
 from src.pythia.T5EngineMock import T5EngineMock
@@ -138,12 +140,24 @@ def getFDsFromFile(file, attributes):
     return getFDs(df, attributes, file)
 
 def getAmbiguousAttribute(prefix, attribute1, attribute2, strategy, t5Engine):
+    dbUtils = DBUtils
+    config = dbUtils.readConfigParameters()
+    cacheEnabled = config.getboolean('params', 'cache')
+
     #requestString = prefix + " attr1: " + attribute1[0] + " attr2: " + attribute2[0]
     requestString = prefix + " attr1: " + attribute1.name + " attr2: " + attribute2.name
     label = None
     if (strategy == STRATEGY_SCHEMA):
         ## TODO: request to the deployed task1
-        label = t5Engine.makePrediction(requestString)
+        if cacheEnabled:
+            label = dbUtils.getAmbiguousCacheFromDb(attribute1.name, attribute2.name)
+            if not label:
+                label = dbUtils.getAmbiguousCacheFromDb(attribute2.name, attribute1.name)
+            if not label:
+                label = t5Engine.makePrediction(requestString)
+                dbUtils.insertAmbiguousInCache(attribute1.name, attribute2.name, label)
+        else:
+            label = t5Engine.makePrediction(requestString)
     if (strategy == STRATEGY_SCHEMA_WITH_DATA_SAMPLE):
         ## TODO: request to the deployed task3
         pass
