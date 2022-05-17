@@ -13,7 +13,7 @@ from src.pythia.TemplateFactory import TemplateFactory, getTemplatesByName, getO
 from src.rest.Authentication import User, get_current_active_user
 from src.pythia.DBUtils import getScenarioListFromDb, getScenarioFromDb, deleteScenarioFromDb, existsDTModelInDb, \
     insertScenario, getEngine, updateScenario, updateTemplates, getTemplatesFromDb, getDBConnection, getColumnsName, \
-    getDbUser, getDbPassword, getDbHost, getDbPort, getDbName, executeQueryBatch
+    getDbUser, getDbPassword, getDbHost, getDbPort, getDbName, executeQueryBatch, readConfigParameters
 from src.pythia.Dataset import Dataset
 
 t5Engine = T5Engine().getInstance()
@@ -150,6 +150,10 @@ def saveTemplates(name: str,  templates = Form(...), user: User = Depends(get_cu
     templates = getTemplatesFromDb(name)
     return json.dumps(templates)
 
+@pythiaroute.get("/maxaqueries")
+def getMaxAQueries(user: User = Depends(get_current_active_user)):
+    config = readConfigParameters()
+    return config['params']['maxaqueries']
 
 @pythiaroute.post("/predict/{name}")
 def predict(name: str, strategy: str = Form(...), structure: str = Form(...), limitResults: int = Form(...), user: User = Depends(get_current_active_user)):
@@ -162,9 +166,11 @@ def predict(name: str, strategy: str = Form(...), structure: str = Form(...), li
     templates = getTemplatesByName(totalTemplates, structure)
     operators = getOperatorsFromTemplate(templates[0])
     print("*** Operators: ", operators)
+    config = readConfigParameters()
+    shuffle = config.getboolean('params', 'shuffle')
     a_queries, a_queries_with_data = find_a_queries(scenario, templates, strategy, connection,
                                                     operators, functions=["min", "max"],
-                                                    executeQuery=True, limitQueryResults=limitResults, shuffleQuery=True)
+                                                    executeQuery=True, limitQueryResults=limitResults, shuffleQuery=shuffle)
     print("*** Total A-Queries Generated:", len(a_queries))
     print("*** Differents A-Queries: ", len(set(a_queries)))
 

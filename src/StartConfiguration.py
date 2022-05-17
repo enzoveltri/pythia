@@ -93,7 +93,8 @@ path = os.path.join(directory.parent.absolute(), configFileName)
 print("*** path: ", path)
 if not os.path.exists(path):
     config['db'] = {'user': user, 'password': password, 'host': host, 'port': port, 'dbname': dbname}
-    config['params'] = {'cache': True}
+    config['params'] = {'cache': True, 'maxaqueries': 5, 'shuffle': True}
+    config['t5'] = {'localpath': '../../data/model', 'remoteurl': '', 'user': '', 'password': ''}
     config.write(open(path, 'w'))
 
 print("*** Creating tables... ")

@@ -143,7 +143,6 @@ def getAmbiguousAttribute(prefix, attribute1, attribute2, strategy, t5Engine):
     dbUtils = DBUtils
     config = dbUtils.readConfigParameters()
     cacheEnabled = config.getboolean('params', 'cache')
-
     #requestString = prefix + " attr1: " + attribute1[0] + " attr2: " + attribute2[0]
     requestString = prefix + " attr1: " + attribute1.name + " attr2: " + attribute2.name
     label = None

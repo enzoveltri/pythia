@@ -1,7 +1,7 @@
 import tensorflow as tf
 import tensorflow_text
 
-MODEL_POSITION = '../../data/model' ## TODO: arameter
+from src.pythia import DBUtils
 
 class T5Engine:
     __instance = None
@@ -23,10 +23,12 @@ class T5Engine:
             raise Exception("This class is a singleton!")
         else:
             T5Engine.__instance = self
-        self.model_path = MODEL_POSITION
+        dbUtils = DBUtils
+        config = dbUtils.readConfigParameters()
+        self.model_path = config['t5']['localpath']
         #self.predict_fn = self.load_predict_fn_old(self.model_path)
         #self.predict_fn = self.load_predict_fn(self.model_path)
-        self.imported = tf.saved_model.load(MODEL_POSITION, ["serve"])
+        self.imported = tf.saved_model.load(self.model_path, ["serve"])
         #tf.saved_model.save(self.imported, "./modello/model.h5")
 
     def get_predict(self, input):
