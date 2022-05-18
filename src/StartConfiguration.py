@@ -18,7 +18,8 @@ def initPythiaDb(configFilePath):
             "name character varying NOT NULL," \
             "username character varying NOT NULL," \
             "metadata json," \
-            "templates json" \
+            "templates json," \
+            "deltas json" \
             ");"
 
     query += "CREATE TABLE users (" \
@@ -91,11 +92,11 @@ configFileName = "config.ini"
 directory = Path(os.path.dirname(os.path.realpath(__file__)))
 path = os.path.join(directory.parent.absolute(), configFileName)
 print("*** path: ", path)
-if not os.path.exists(path):
-    config['db'] = {'user': user, 'password': password, 'host': host, 'port': port, 'dbname': dbname}
-    config['params'] = {'cache': True, 'maxaqueries': 5, 'shuffle': True}
-    config['t5'] = {'localpath': '../../data/model', 'remoteurl': '', 'user': '', 'password': ''}
-    config.write(open(path, 'w'))
+#if not os.path.exists(path):
+config['db'] = {'user': user, 'password': password, 'host': host, 'port': port, 'dbname': dbname}
+config['params'] = {'cache': True, 'maxaqueries': 5, 'shuffle': True}
+config['t5'] = {'localpath': '../../data/model', 'remoteurl': '', 'user': '', 'password': ''}
+config.write(open(path, 'w'))
 
 print("*** Creating tables... ")
 initPythiaDb(path)

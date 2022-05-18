@@ -6,6 +6,7 @@ import random
 from fastapi import APIRouter, Depends, UploadFile, Form
 
 from src.pythia.Constants import *
+from src.pythia.DeltaAmbiguous import DeltaAmbiguous
 from src.pythia.ExportResult import ExportResult
 from src.pythia.Pythia import find_a_queries, checkWithData
 from src.pythia.T5Engine import T5Engine
@@ -13,7 +14,8 @@ from src.pythia.TemplateFactory import TemplateFactory, getTemplatesByName, getO
 from src.rest.Authentication import User, get_current_active_user
 from src.pythia.DBUtils import getScenarioListFromDb, getScenarioFromDb, deleteScenarioFromDb, existsDTModelInDb, \
     insertScenario, getEngine, updateScenario, updateTemplates, getTemplatesFromDb, getDBConnection, getColumnsName, \
-    getDbUser, getDbPassword, getDbHost, getDbPort, getDbName, executeQueryBatch, readConfigParameters
+    getDbUser, getDbPassword, getDbHost, getDbPort, getDbName, executeQueryBatch, readConfigParameters, getDeltasFromDb, \
+    updateDeltas
 from src.pythia.Dataset import Dataset
 
 t5Engine = T5Engine().getInstance()
@@ -139,8 +141,13 @@ def findAmbiguous(name: str, user: User = Depends(get_current_active_user)):
 
 @pythiaroute.post("/save/{name}")
 def saveScenario(name: str,  scenario = Form(...), user: User = Depends(get_current_active_user)):
+    oldScenario = getScenarioFromDb(name)
     updateScenario(name, scenario, False)
     scenario = getScenarioFromDb(name)
+    deltas = getDeltasFromDb(name)
+    for d in get_deltas_ambiguous(oldScenario, scenario):
+        deltas.append(d)
+    updateDeltas(name, json.dumps([d.toJSON() for d in deltas], indent=3))
     return scenario.toJSON()
 
 @pythiaroute.post("/save/templates/{name}")
@@ -249,6 +256,28 @@ def get_results(connection, strategy, scenario, a_queries_with_data):
 
 
 #TODO: Move next methods to appropriate class
+
+def get_deltas_ambiguous(oldScenario, newScenario):
+    listOld = oldScenario.getAmbiguousAttribute()
+    listNew = newScenario.getAmbiguousAttribute()
+    result = []
+    for n in listNew:
+        result.append(DeltaAmbiguous(newScenario._linearizeSchema(), n[0].name, n[1].name, None, n[2]))
+    for o in listOld:
+        deltas = [d for d in result if d.attr1 == o[0].name and d.attr2 == o[1].name]
+        if len(deltas) > 0:
+            delta = deltas[0]
+            if o[2] == delta.real:
+                result.remove(delta)
+            else:
+                delta.predicted = o[2]
+        else:
+            result.append(DeltaAmbiguous(newScenario._linearizeSchema(), o[0].name, o[1].name, o[2], None))
+    #print("results: ", json.dumps([d.toJSON() for d in result]))
+    return result
+
+
+
 def get_tables_from_sentences(to_totto_list):
     totto_examples = []
     for sentence, data in to_totto_list:

@@ -10,6 +10,7 @@ from munch import DefaultMunch
 
 ## SCENARIO
 from src.pythia.Dataset import Dataset
+from src.pythia.DeltaAmbiguous import DeltaAmbiguous
 from src.pythia.Metadata import Metadata
 from src.pythia.User import User
 from src.pythia.PandasUtils import updateDFColumns
@@ -98,6 +99,17 @@ def getAmbiguousFromDb(name):
     results = []
     for a in ambiguous:
         results.append(((a[0], a[1]), (a[2], a[3]), a[4]))
+    return results
+
+
+def getDeltasFromDb(name):
+    connection = getDBConnection(getDbUser(), getDbPassword(), getDbHost(), getDbPort(), getDbName())
+    query = "select * from scenari where name='" + name + "';"
+    meta = executeQueryBatch(query, connection)
+    results = []
+    if meta[0][4]:
+        for d in meta[0][4]:
+            results.append(json.loads(json.dumps(d), object_hook=lambda x: DeltaAmbiguous(**x)))
     return results
 
 
@@ -192,6 +204,22 @@ def createAmbiguousTable(name):
 def updateTemplates(name, templates):
     connection = getDBConnection(getDbUser(), getDbPassword(), getDbHost(), getDbPort(), getDbName())
     query = "UPDATE scenari set templates='" + templates + "' where name='" + name + "'; "
+    try:
+        cur = connection.cursor()
+        cur.execute(query)
+        cur.close()
+        connection.commit()
+    except (Exception, psycopg2.DatabaseError) as error:
+        print("Errore: ", error)
+        connection.rollback()
+    finally:
+        if connection is not None:
+            connection.close()
+
+
+def updateDeltas(name, deltas):
+    connection = getDBConnection(getDbUser(), getDbPassword(), getDbHost(), getDbPort(), getDbName())
+    query = "UPDATE scenari set deltas='" + deltas + "' where name='" + name + "'; "
     try:
         cur = connection.cursor()
         cur.execute(query)
