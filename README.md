@@ -44,4 +44,5 @@ To run the backend make sure you have a Postresql instance installed.
 
 
 # References
-[1] Unsupervised Generation of Ambiguous Textual Claims from Relational Data; Veltri Enzo, Santoro Donatello, Badaro Gilbert, Saeed Mohammed and Papotti Paolo. SIGMOD, 2022. Demo Paper
+
+[[1] Unsupervised Generation of Ambiguous Textual Claims from Relational Data; Veltri Enzo, Santoro Donatello, Badaro Gilbert, Saeed Mohammed and Papotti Paolo. SIGMOD, 2022. Demo Paper](https://www.eurecom.fr/~papotti/files/PythiaDemoCR.pdf)
