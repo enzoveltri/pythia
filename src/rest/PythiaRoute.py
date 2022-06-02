@@ -353,18 +353,28 @@ def to_totto_full(results, cols):
     for row in results:
         sentence = row[0]
         colList = []
-        row1List = []
-        row2List = []
-        for i in range(1, len(cols), 2):
-            colList.append(cols[i])
-            row1List.append(row[i])
-            #row2List.append(row[i+1]) #TODO: row[i+1] raises an exception in some rows. Temporarily I put an if in the next line
-            if len(row) > (i+1):
-                row2 = row[i + 1]
-            else:
-                row2 = "OVERSIZE"
-            row2List.append(row2)
-        data = [tuple(colList), tuple(row1List), tuple(row2List)]
+        rowsToGenerate = 0
+        lastColumn = ""
+        for i in range(1, len(cols)):
+            if cols[i] not in colList:
+                rowsToGenerate = 1
+                colList.append(cols[i])
+                lastColumn = cols[i]
+            if (cols[i] == lastColumn):
+                rowsToGenerate += 1
+        rowsToGenerate -= 1
+        rows = []
+        for i in range(0, rowsToGenerate):
+            rowNew = []
+            rows.append(rowNew)
+        for i in range(1, len(cols), rowsToGenerate):
+            #colList.append(cols[i])
+            for col in range(0, rowsToGenerate):
+                rowNew = rows[col]
+                rowNew.append(row[i+col])
+        data = [tuple(colList)]
+        for rowNew in rows:
+            data.append(tuple(rowNew))
         to_totto.append((sentence, data))
     return to_totto
 
