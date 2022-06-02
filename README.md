@@ -23,11 +23,12 @@ We show the high accuracy of our solution in profiling relational tables and rep
 Please note that for all colab notebooks is required a google cloud storage bucket to store the model and the data. 
 
 Trained models can be found here:
-	- Schema ambiguity model: https://drive.google.com/drive/folders/190eDcbIZ0r3cWvioBieeQAtXOBoy6X5Y?usp=sharing. Put the downloaded file in a $AMB_MODEL_DIR$ folder
-	- Sentence generator model: https://drive.google.com/drive/folders/1V8hWGW6U69BFt6NgWb_ZvnVouUWQstzE?usp=sharing. Put the downloaded file in a $SENTENCE_GEN_DIR$ folder
+
+- Schema ambiguity model: https://drive.google.com/drive/folders/190eDcbIZ0r3cWvioBieeQAtXOBoy6X5Y?usp=sharing. Put the downloaded file in a AMB_MODEL_DIR folder
+- Sentence generator model: https://drive.google.com/drive/folders/1V8hWGW6U69BFt6NgWb_ZvnVouUWQstzE?usp=sharing. Put the downloaded file in a SENTENCE_GEN_DIR folder
 
 # Pythia API
-- src/pythia contains the API. The main algorithm is implemented in PythiaT5.py. Change the MODEL_POSITION variable in T5Engine class to your $AMB_MODEL_DIR$. Change the MODEL_POSITION variavle in T5SentenceGenerator to your $SENTENCE_GEN_DIR$. The template based algorithm is implemented in Pythia.py. PythiaT5 will be integrated with the front-end in the next version.
+- src/pythia contains the API. The main algorithm is implemented in PythiaT5.py. Change the MODEL_POSITION variable in T5Engine class to your AMB_MODEL_DIR. Change the MODEL_POSITION variavle in T5SentenceGenerator to your SENTENCE_GEN_DIR. The template based algorithm is implemented in Pythia.py. PythiaT5 will be integrated with the front-end in the next version.
 - Scripts to fine-tune and test a T5-based annotator are available in ```src/pythia/T5Annotator/```.
 
 
