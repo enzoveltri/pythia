@@ -149,12 +149,12 @@ def getAmbiguousAttribute(prefix, attribute1, attribute2, strategy, t5Engine):
     if (strategy == STRATEGY_SCHEMA):
         ## TODO: request to the deployed task1
         if cacheEnabled:
-            label = dbUtils.getAmbiguousCacheFromDb(attribute1.name, attribute2.name)
-            if not label:
-                label = dbUtils.getAmbiguousCacheFromDb(attribute2.name, attribute1.name)
+            #label = dbUtils.getAmbiguousCacheFromDb(attribute1.name, attribute2.name)
+            label = dbUtils.getAmbiguousCacheFromDb(requestString)
             if not label:
                 label = t5Engine.makePrediction(requestString)
-                dbUtils.insertAmbiguousInCache(attribute1.name, attribute2.name, label)
+                #dbUtils.insertAmbiguousInCache(attribute1.name, attribute2.name, label)
+                dbUtils.insertAmbiguousInCache(requestString, label)
         else:
             label = t5Engine.makePrediction(requestString)
     if (strategy == STRATEGY_SCHEMA_WITH_DATA_SAMPLE):

@@ -113,19 +113,44 @@ def getDeltasFromDb(name):
     return results
 
 
-def getAmbiguousCacheFromDb(attr1, attr2):
+#def getAmbiguousCacheFromDb(attr1, attr2):
+#    connection = getDBConnection(getDbUser(), getDbPassword(), getDbHost(), getDbPort(), getDbName())
+#    query = "select * from ambiguous_cache where attr1='" + attr1 + "' and attr2='" + attr2 + "';"
+#    ambiguous = executeQueryBatch(query, connection)
+#    result = None
+#    if len(ambiguous) > 0:
+#        result = ambiguous[0][2]
+#    return result
+
+def getAmbiguousCacheFromDb(request):
     connection = getDBConnection(getDbUser(), getDbPassword(), getDbHost(), getDbPort(), getDbName())
-    query = "select * from ambiguous_cache where attr1='" + attr1 + "' and attr2='" + attr2 + "';"
+    query = "select * from ambiguous_cache where request='" + request + "';"
     ambiguous = executeQueryBatch(query, connection)
     result = None
     if len(ambiguous) > 0:
-        result = ambiguous[0][2]
+        result = ambiguous[0][1]
     return result
 
 
-def insertAmbiguousInCache(attr1, attr2, label):
+#def insertAmbiguousInCache(attr1, attr2, label):
+#    connection = getDBConnection(getDbUser(), getDbPassword(), getDbHost(), getDbPort(), getDbName())
+#    query = "INSERT INTO ambiguous_cache(attr1, attr2, label) VALUES ('" + attr1 + "','" + attr2 + "','" + label + "'); "
+#    try:
+#        cur = connection.cursor()
+#        cur.execute(query)
+#        cur.close()
+#        connection.commit()
+#    except (Exception, psycopg2.DatabaseError) as error:
+#        print("Errore: ", error)
+#        connection.rollback()
+#    finally:
+#        if connection is not None:
+#            connection.close()
+
+
+def insertAmbiguousInCache(request, label):
     connection = getDBConnection(getDbUser(), getDbPassword(), getDbHost(), getDbPort(), getDbName())
-    query = "INSERT INTO ambiguous_cache(attr1, attr2, label) VALUES ('" + attr1 + "','" + attr2 + "','" + label + "'); "
+    query = "INSERT INTO ambiguous_cache(request, label) VALUES ('" + request + "','" + label + "'); "
     try:
         cur = connection.cursor()
         cur.execute(query)
@@ -137,7 +162,6 @@ def insertAmbiguousInCache(attr1, attr2, label):
     finally:
         if connection is not None:
             connection.close()
-
 
 def existsDTModelInDb(name):
     connection = getDBConnection(getDbUser(), getDbPassword(), getDbHost(), getDbPort(), getDbName())

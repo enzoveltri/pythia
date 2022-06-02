@@ -29,9 +29,14 @@ def initPythiaDb(configFilePath):
              "email character varying" \
              ");"
 
+    #query += "CREATE TABLE ambiguous_cache (" \
+    #         "attr1 character varying," \
+    #         "attr2 character varying," \
+    #         "label character varying" \
+    #         ");"
+
     query += "CREATE TABLE ambiguous_cache (" \
-             "attr1 character varying," \
-             "attr2 character varying," \
+             "request character varying," \
              "label character varying" \
              ");"
 
