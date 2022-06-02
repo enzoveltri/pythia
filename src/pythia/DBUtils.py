@@ -163,6 +163,23 @@ def insertAmbiguousInCache(request, label):
         if connection is not None:
             connection.close()
 
+
+def updateAmbiguousInCache(request, label):
+    connection = getDBConnection(getDbUser(), getDbPassword(), getDbHost(), getDbPort(), getDbName())
+    query = "UPDATE ambiguous_cache set label='" + label + "' WHERE request='" + request + "'; "
+    try:
+        cur = connection.cursor()
+        cur.execute(query)
+        cur.close()
+        connection.commit()
+    except (Exception, psycopg2.DatabaseError) as error:
+        print("Errore: ", error)
+        connection.rollback()
+    finally:
+        if connection is not None:
+            connection.close()
+
+
 def existsDTModelInDb(name):
     connection = getDBConnection(getDbUser(), getDbPassword(), getDbHost(), getDbPort(), getDbName())
     query1 = "select * from scenari where name='" + name + "';"

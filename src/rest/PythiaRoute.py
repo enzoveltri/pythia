@@ -15,7 +15,7 @@ from src.rest.Authentication import User, get_current_active_user
 from src.pythia.DBUtils import getScenarioListFromDb, getScenarioFromDb, deleteScenarioFromDb, existsDTModelInDb, \
     insertScenario, getEngine, updateScenario, updateTemplates, getTemplatesFromDb, getDBConnection, getColumnsName, \
     getDbUser, getDbPassword, getDbHost, getDbPort, getDbName, executeQueryBatch, readConfigParameters, getDeltasFromDb, \
-    updateDeltas
+    updateDeltas, getAmbiguousCacheFromDb, updateAmbiguousInCache, insertAmbiguousInCache
 from src.pythia.Dataset import Dataset
 
 t5Engine = T5Engine().getInstance()
@@ -43,7 +43,7 @@ def uploadFile(file: UploadFile = Form(...), user: User = Depends(get_current_ac
     tmpFolder = "../../data/tmp/" ## TODO: use system tmp folder
     if not os.path.exists(tmpFolder): os.makedirs(tmpFolder)
     file_location = f"../../data/tmp/{file.filename}" ## TODO: user the reference to the folder above
-    name = file.filename.replace(".csv", "")
+    name = file.filename.replace(".csv", "").lower()
     datasetName = user.username + "_" + name
     with open(file_location, "wb+") as file_object:
         file_object.write(file.file.read())
@@ -144,6 +144,23 @@ def saveScenario(name: str,  scenario = Form(...), user: User = Depends(get_curr
     oldScenario = getScenarioFromDb(name)
     updateScenario(name, scenario, False)
     scenario = getScenarioFromDb(name)
+    # Update cache
+    config = readConfigParameters()
+    cacheEnabled = config.getboolean('params', 'cache')
+    if cacheEnabled:
+        ambiguous = dict()
+        for ambOld in oldScenario.getAmbiguousAttribute():
+            requestString = oldScenario._linearizeSchema() + " attr1: " + ambOld[0].name + " attr2: " + ambOld[1].name
+            ambiguous[requestString] = "none"
+        for amb in scenario.getAmbiguousAttribute():
+            requestString = scenario._linearizeSchema() + " attr1: " + amb[0].name + " attr2: " + amb[1].name
+            ambiguous[requestString] = amb[2]
+        for key in ambiguous:
+            if getAmbiguousCacheFromDb(key):
+                updateAmbiguousInCache(key, ambiguous[key])
+            else:
+                insertAmbiguousInCache(key, ambiguous[key])
+    # Update deltas
     deltas = getDeltasFromDb(name)
     for d in get_deltas_ambiguous(oldScenario, scenario):
         deltas.append(d)
@@ -152,6 +169,16 @@ def saveScenario(name: str,  scenario = Form(...), user: User = Depends(get_curr
 
 @pythiaroute.post("/save/templates/{name}")
 def saveTemplates(name: str,  templates = Form(...), user: User = Depends(get_current_active_user)):
+    temps = json.loads(templates)
+    for t in temps:
+        if t[2]:
+            ops = []
+            for op in t[2]:
+                if "," in op:
+                    op = op.split(",")
+                ops.append(op)
+            t[2] = ops
+    templates = json.dumps(temps)
     templates = templates.replace("''", "'").replace("'", "''")
     updateTemplates(name, templates)
     templates = getTemplatesFromDb(name)
