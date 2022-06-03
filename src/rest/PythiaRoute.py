@@ -251,7 +251,6 @@ def get_results(connection, strategy, scenario, a_queries_with_data):
         to_totto = []
         if (type == TYPE_FD):
             tableName = scenario.datasetName
-            # TODO: to_totto_fd raises an exception. See the method for details
             columnsQuery = getColumnsName(a_query, connection)
             to_totto = to_totto_fd(results, columnsQuery, tableName, connection)
             tables_from_sentences = get_tables_from_sentences(to_totto)
@@ -266,11 +265,16 @@ def get_results(connection, strategy, scenario, a_queries_with_data):
             tables_from_sentences = get_tables_from_sentences(to_totto)
             dict_from_sentences = get_dict_from_sentences(to_totto)
         if (type == TYPE_FULL):
-            # TODO: to_totto_full raises an exception. See the method for details
             columnsQuery = getColumnsName(a_query, connection)
             to_totto = to_totto_full(results, columnsQuery)
             tables_from_sentences = get_tables_from_sentences(to_totto)
             dict_from_sentences = get_dict_from_sentences(to_totto)
+        if (type == TYPE_FUNC):
+            columnsQuery = getColumnsName(a_query, connection)
+            to_totto = to_totto_full(results, columnsQuery)
+            tables_from_sentences = get_tables_from_sentences(to_totto)
+            dict_from_sentences = get_dict_from_sentences(to_totto)
+            #print(results)
         export_results = []
         for i in range(len(results)):
             if len(dict_from_sentences) > 0:  # TODO: remove if clause when all the to_totto are ok
