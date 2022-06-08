@@ -11,6 +11,7 @@ def toListCompositeKeys(compositeKey):
     return list(tmpSet)
 
 def checkAQueryComplete(a_query):
+    print(a_query)
     if ("$" in a_query):
         return False
     return True
@@ -61,8 +62,10 @@ def attributeStrategyTemplate(template, ambiguities, pk, ck, tableName, operator
             continue
         a_query = template[0]
         if ck is not None:
-            a_query = updatePKsFromCk(a_query, ck)
-            a_query = replacePKs(a_query, ck, None)
+            a_query = updatePKsFromCkAttribute(a_query, ck)
+            print("Updated:", a_query)
+            a_query = replacePKsAttribute(a_query, ck, None)
+            print("Replaced:", a_query)
         a_query = a_query.replace('$PK$', ('"' + pk + '"'))
         a_query = a_query.replace('$TABLE$', tableName)
         a_query = a_query.replace('$OPERATOR$', operator)
@@ -204,6 +207,26 @@ def updatePKsFromCk(a_query_original, ck):
             new_token = token.replace("PK", "PK_" + str(pk_index))
             newTokens.append(new_token)
     a_query = a_query_original.replace(' , '.join(tokensReplace), ' , '.join(newTokens))
+    return a_query
+
+def updatePKsFromCkAttribute(a_query_original, ck):
+    tokensReplace = findTokens(a_query_original, "$PK$")
+    newTokens = []
+    for token in tokensReplace:
+        tokensForAttr = []
+        for pk_index in range(0, len(ck)):
+            new_token = token.replace("PK", "PK_" + str(pk_index))
+            tokensForAttr.append(new_token)
+        newTokens.append(tokensForAttr)
+    a_query = a_query_original
+    for origToken, tokenSeq in zip(tokensReplace, newTokens):
+        a_query = a_query.replace(origToken, "||', '||".join(tokenSeq))
+    return a_query
+
+def replacePKsAttribute(a_query, ck, subpk):
+    for pk_index in range(0, len(ck)):
+        key = ck[pk_index]
+        a_query = a_query.replace('$PK_' + str(pk_index) + '$', ('"' + key + '"'))
     return a_query
 
 def updateLHSFromLKS(a_query_original, lhs):

@@ -10,7 +10,7 @@ printConfigRow = ['has', 'has more than', 'has less than', 'has not']
 printConfigFunc = ["has the highest", "has the lowest", "hasn''t the highest", "hasn''t the lowest"]
 
 ## templates ##
-attributeTemplate = "SELECT CONCAT( b1.$PK$, $PRINT_F$, b2.$PK$ ), b1.$PK$, b2.$PK$, b1.$AMB_1$, b2.$AMB_1$, b1.$AMB_2$, b2.$AMB_2$ \n" \
+attributeTemplate = "SELECT CONCAT( b1.$PK$ , $PRINT_F$, b2.$PK$ ), b1.$PK$, b2.$PK$, b1.$AMB_1$, b2.$AMB_1$, b1.$AMB_2$, b2.$AMB_2$ \n" \
                     "FROM $TABLE$ b1, $TABLE$ b2 \n" \
                     "WHERE b1.$PK$ <> b2.$PK$ AND b1.$AMB_1$ $OPERATOR$ b2.$AMB_1$ AND b1.$AMB_2$ $MT_OPERATOR$ b2.$AMB_2$"
 
@@ -26,7 +26,7 @@ fdTemplate = "SELECT CONCAT( $LHS_NAME$ , $PRINT_FD$ , b1.$RHS$ , $PRINT_FD$, Co
               "FROM $TABLE$ b1 \n" \
               "WHERE b1.$RHS$ in (select $RHS$ from (select $RHS$ , $LHS$ from $TABLE$ group by $RHS$ , $LHS$ ) as Nested group by $RHS$ having count(*) > 1 ) GROUP BY b1.$RHS$ , b1.$LHS$"
 
-functionTemplate = "SELECT CONCAT( b1.$SUB_PK$, $PRINT_FUNC$, $A1_NAME$ ), b1.$SUB_PK$, b2.$SUB_PK$,  b1.$A1$, b2.$A1$ , b1.$PK$ , b2.$PK$ \n" \
+functionTemplate = "SELECT CONCAT( b1.$SUB_PK$ , $PRINT_FUNC$, $A1_NAME$ ), b1.$SUB_PK$, b2.$SUB_PK$,  b1.$A1$, b2.$A1$ , b1.$PK$ , b2.$PK$ \n" \
                    "FROM $TABLE$ b1, $TABLE$ b2 \n" \
                    "WHERE b1.$SUB_PK$ = b2.$SUB_PK$ AND b1.$A1$ $OP_FUNC$ (SELECT $FUNC$( $A1$ ) FROM $TABLE$) AND b2.$A1$ $MT_OP_FUNC$ (SELECT $FUNC$( $A1$ ) FROM $TABLE$)"
 
