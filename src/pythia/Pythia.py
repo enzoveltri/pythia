@@ -50,7 +50,7 @@ def checkOperatorWithType(attribute1, attribute2, operator, attributesTypes):
         return False
     return True
 
-def attributeStrategyTemplate(template, ambiguities, pk, tableName, operator, mt, printConfig, attributesTypes):
+def attributeStrategyTemplate(template, ambiguities, pk, ck, tableName, operator, mt, printConfig, attributesTypes):
     a_queries = []
     type = template[1]
     if type != TYPE_ATTRIBUTE:
@@ -60,6 +60,9 @@ def attributeStrategyTemplate(template, ambiguities, pk, tableName, operator, mt
         if checkOperatorWithType(a1, a2, operator, attributesTypes) == False:
             continue
         a_query = template[0]
+        if ck is not None:
+            a_query = updatePKsFromCk(a_query, ck)
+            a_query = replacePKs(a_query, ck, None)
         a_query = a_query.replace('$PK$', ('"' + pk + '"'))
         a_query = a_query.replace('$TABLE$', tableName)
         a_query = a_query.replace('$OPERATOR$', operator)
@@ -312,10 +315,11 @@ def find_a_queries(dataset, templates, matchType, connection,
         if (type == TYPE_ATTRIBUTE) and (len(ambiguities) > 0):
             print("*** GENERATING A-QUERIES for ATTRIBUTEs")
             for operator in operators:
-                key = pk
+                ck = None
                 if len(compositeKeys) > 0:
-                    key = compositeKeys[0]
-                a_queries = attributeStrategyTemplate(
+                    ck = compositeKeys[0]
+                    print("*** CK:", ck)
+                a_queries = attributeStrategyTemplate(template, ambiguities, pk, ck, tableName, operator, matchType,print_f, attributesTypes)
                 for a_query in a_queries:
                     if (a_query is not None and executeQuery):
                         if shuffleQuery:
