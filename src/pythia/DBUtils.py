@@ -20,8 +20,12 @@ from src.pythia.PandasUtils import updateDFColumns
 def readConfigParameters():
     config = configparser.ConfigParser()
     configFilePath = "../../config.ini"
+    if os.getenv('CONFIG_PATH_FILE') is None :
+        configFilePath = "../../config.ini"
+    else:
+        configFilePath = os.getenv('CONFIG_PATH_FILE')
     if not os.path.exists(configFilePath):
-        print("File not found")
+        print("File not found: " + configFilePath)
     config.read(configFilePath)
     return config
 

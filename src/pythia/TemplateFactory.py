@@ -20,7 +20,7 @@ rowTemplate = "SELECT CONCAT( b1.$SUB_PK$ , $PRINT_O$, b2.$A1$, $A1_NAME$ ) , b1
 
 fullTemplate = "SELECT CONCAT( b1.$SUB_PK$ , $PRINT_F$ , b3.$SUB_PK$ ) , b1.$SUB_PK$ , b2.$SUB_PK$ , b3.$SUB_PK$ , b1.$PK$ , b2.$PK$ , b3.$PK$ , b1.$AMB_1$ , b2.$AMB_1$ , b3.$AMB_1$ , b1.$AMB_2$ , b2.$AMB_2$ , b3.$AMB_2$ \n" \
                "FROM $TABLE$ b1 , $TABLE$ b2 , $TABLE$ b3 \n" \
-               "WHERE b1.$SUB_PK$ = b2.$SUB_PK$ AND b1.$AMB_1$ $OPERATOR$ b2.$AMB_1$ AND b1.$AMB_2$ $MT_OPERATOR$ b2.$AMB_2$ AND $B_TABLE$.$AMB_1$ $OPERATOR$ b3.$AMB_1$ AND $B_TABLE$.$AMB_2$ $MT_OPERATOR$ b3.$AMB_2$ "
+               "WHERE b1.$SUB_PK$ = b2.$SUB_PK$ AND b1.$SUB_PK$ <> b3.$SUB_PK$ AND b1.$AMB_1$ $OPERATOR$ b2.$AMB_1$ AND b1.$AMB_2$ $MT_OPERATOR$ b2.$AMB_2$ AND $B_TABLE$.$AMB_1$ $OPERATOR$ b3.$AMB_1$ AND $B_TABLE$.$AMB_2$ $MT_OPERATOR$ b3.$AMB_2$ "
 
 fdTemplate = "SELECT CONCAT( $LHS_NAME$ , $PRINT_FD$ , b1.$RHS$ , $PRINT_FD$, Count(b1.$PK$) ), b1.$LHS$ , b1.$RHS$ \n" \
               "FROM $TABLE$ b1 \n" \

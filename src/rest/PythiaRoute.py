@@ -387,20 +387,29 @@ def to_totto_row(results, cols):
     to_totto = []
     for row in results:
         sentence = row[0]
-        total = len(row)
-        i = 1
-        t0 = []
-        t1 = []
-        t2 = []
-        while i < total:
-            t0.append(cols[i])
-            t1.append(row[i])
-            t2.append(row[i + 1])
-            i += 2
-        t0 = tuple(t0)
-        t1 = tuple(t1)
-        t2 = tuple(t2)
-        data = [t0, t1, t2]
+        colList = []
+        rowsToGenerate = 0
+        lastColumn = ""
+        for i in range(1, len(cols)):
+            if cols[i] not in colList:
+                rowsToGenerate = 1
+                colList.append(cols[i])
+                lastColumn = cols[i]
+            if (cols[i] == lastColumn):
+                rowsToGenerate += 1
+        rowsToGenerate -= 1
+        rows = []
+        for i in range(0, rowsToGenerate):
+            rowNew = []
+            rows.append(rowNew)
+        for i in range(1, len(cols), rowsToGenerate):
+            #colList.append(cols[i])
+            for col in range(0, rowsToGenerate):
+                rowNew = rows[col]
+                rowNew.append(row[i+col])
+        data = [tuple(colList)]
+        for rowNew in rows:
+            data.append(tuple(rowNew))
         to_totto.append((sentence, data))
     return to_totto
 

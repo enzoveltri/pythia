@@ -50,7 +50,7 @@ def checkOperatorWithType(attribute1, attribute2, operator, attributesTypes):
         return False
     return True
 
-def attributeStrategyTemplate(template, ambiguities, pk,tableName, operator, mt, printConfig, attributesTypes):
+def attributeStrategyTemplate(template, ambiguities, pk, tableName, operator, mt, printConfig, attributesTypes):
     a_queries = []
     type = template[1]
     if type != TYPE_ATTRIBUTE:
@@ -77,7 +77,7 @@ def attributeStrategyTemplate(template, ambiguities, pk,tableName, operator, mt,
             a_queries.append(a_query)
     return a_queries
 
-def fullStrategyTemplate(template, ambiguities, ck,tableName, operator, mt, printConfig, attributesTypes):
+def fullStrategyTemplate(template, ambiguities, ck, tableName, operator, mt, printConfig, attributesTypes):
     a_queries = []
     type = template[1]
     if type != TYPE_FULL:
@@ -88,6 +88,8 @@ def fullStrategyTemplate(template, ambiguities, ck,tableName, operator, mt, prin
     a_query_updated = updatePKsFromCk(a_query_original, ck)
     for a1, a2, label in ambiguities:
         if checkOperatorWithType(a1, a2, operator, attributesTypes) == False:
+            continue
+        if a1 in ck or a2 in ck:
             continue
         a_query = a_query_updated
         a_query = a_query.replace('$SUB_PK$', ('"' + subpk + '"'))
@@ -131,7 +133,9 @@ def rowStrategyTemplate(template, ck, tableName, attributes,attributesTypes, ope
         a_query = a_query.replace('$A1$', ('"' + a + '"'))
         a_query = a_query.replace('$A1_NAME$', ("' " + a + "'"))
         a_query = a_query.replace('$TABLE$', tableName)
+        a_query = a_query.replace('$OPERATOR$', operator)
         printo_string = printo(operator, printConfig).strip()
+        printf_string = printf(operator, a, printConfig).strip()
         if mt == MATCH_TYPE_CONTRADICTING:
             a_query = a_query.replace('$MT_OPERATOR$', negOperator(operator))
         else:
@@ -139,6 +143,7 @@ def rowStrategyTemplate(template, ck, tableName, attributes,attributesTypes, ope
             if mt == MATCH_TYPE_UNIFORM_FALSE:
                 printo_string = printo(negOperator(operator), printConfig).strip()
         a_query = a_query.replace('$PRINT_O$', " ' " + printo_string + " '")
+        a_query = a_query.replace('$PRINT_F$', " ' " + printf_string + " '")
         if checkAQueryComplete(a_query):
             a_queries.append(a_query)
     return a_queries
@@ -307,7 +312,10 @@ def find_a_queries(dataset, templates, matchType, connection,
         if (type == TYPE_ATTRIBUTE) and (len(ambiguities) > 0):
             print("*** GENERATING A-QUERIES for ATTRIBUTEs")
             for operator in operators:
-                a_queries = attributeStrategyTemplate(template, ambiguities, pk, tableName, operator, matchType, print_f, attributesTypes)
+                key = pk
+                if len(compositeKeys) > 0:
+                    key = compositeKeys[0]
+                a_queries = attributeStrategyTemplate(
                 for a_query in a_queries:
                     if (a_query is not None and executeQuery):
                         if shuffleQuery:
