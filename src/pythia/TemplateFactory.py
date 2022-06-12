@@ -22,7 +22,7 @@ fullTemplate = "SELECT CONCAT( b1.$SUB_PK$ , $PRINT_F$ , b3.$SUB_PK$ ) , b1.$SUB
                "FROM $TABLE$ b1 , $TABLE$ b2 , $TABLE$ b3 \n" \
                "WHERE b1.$ID$ <> b2.$ID$ AND b1.$SUB_PK$ = b2.$SUB_PK$ AND b1.$SUB_PK$ <> b3.$SUB_PK$ AND b1.$AMB_1$ $OPERATOR$ b2.$AMB_1$ AND b1.$AMB_2$ $MT_OPERATOR$ b2.$AMB_2$ AND $B_TABLE$.$AMB_1$ $OPERATOR$ b3.$AMB_1$ AND $B_TABLE$.$AMB_2$ $MT_OPERATOR$ b3.$AMB_2$ "
 
-fdTemplate = "SELECT CONCAT( $LHS_NAME$ , $PRINT_FD$ , b1.$RHS$ , $PRINT_FD$, Count(b1.$PK$), ' $CONCEPT$'), b1.$LHS$ , b1.$RHS$\n" \
+fdTemplate = "SELECT CONCAT( $LHS_NAME$ , $PRINT_FD$ , b1.$RHS$ , $PRINT_FD$, Count(b1.$PK$), ''$CONCEPT$''), b1.$LHS$ , b1.$RHS$\n" \
               "FROM $TABLE$ b1 \n" \
               "WHERE b1.$RHS$ in (select $RHS$ from (select distinct $RHS$ , count(*) from $TABLE$ group by $RHS$ , $LHS$ ) as Nested group by $RHS$ having count(*) > 1 ) GROUP BY b1.$RHS$ , b1.$LHS$"
 
