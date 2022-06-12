@@ -11,7 +11,6 @@ def toListCompositeKeys(compositeKey):
     return list(tmpSet)
 
 def checkAQueryComplete(a_query):
-    print(a_query)
     if ("$" in a_query):
         return False
     return True
