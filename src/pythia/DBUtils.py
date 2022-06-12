@@ -69,7 +69,7 @@ def getScenarioFromDb(name):
     dict = meta[0][2]
     # dataset = Dataset(**json.loads(meta[0][2]))
     datasetMunch = DefaultMunch.fromDict(dict, Dataset)
-    dataset = Dataset(name)
+    dataset = Dataset(name, datasetMunch.name)
     dataset.datasetName = datasetMunch.datasetName
     dataset.attributes = datasetMunch.attributes
     dataset.pk = datasetMunch.pk

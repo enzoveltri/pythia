@@ -13,7 +13,8 @@ from itertools import combinations, permutations
 
 class Dataset:
 
-    def __init__(self, datasetName):
+    def __init__(self, datasetName, name):
+        self.name = name
         self.datasetName = datasetName
         self.pk = None
         self.fds = []
@@ -24,7 +25,6 @@ class Dataset:
         self.dataframe = self._loadDataFrame(file)
         self.attributes = self._getAttributesFromDF(self.dataframe)
         self.nameToAttribute = self._dictNameToAttribute()
-
 
     def findCompositeKeys(self, maxSizeKeys, ckMinimal):
         return self.findCompositeKeys(self, self.dataframe, maxSizeKeys, ckMinimal)
@@ -130,9 +130,6 @@ class Dataset:
 
     def getDataFrame(self):
         return self.dataframe
-
-    def getMappingsAttributes(self):
-        return self.mappigsAttributes
 
     def getAmbiguousAttribute(self):
         return self.ambiguousAttribute

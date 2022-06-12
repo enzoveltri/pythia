@@ -9,6 +9,7 @@ from src.pythia.Constants import *
 from src.pythia.DeltaAmbiguous import DeltaAmbiguous
 from src.pythia.ExportResult import ExportResult
 from src.pythia.Pythia import find_a_queries, checkWithData
+from src.pythia.StringUtils import normalizeString
 from src.pythia.T5Engine import T5Engine
 from src.pythia.TemplateFactory import TemplateFactory, getTemplatesByName, getOperatorsFromTemplate
 from src.rest.Authentication import User, get_current_active_user
@@ -44,10 +45,10 @@ def uploadFile(file: UploadFile = Form(...), user: User = Depends(get_current_ac
     if not os.path.exists(tmpFolder): os.makedirs(tmpFolder)
     file_location = f"../../data/tmp/{file.filename}" ## TODO: user the reference to the folder above
     name = file.filename.replace(".csv", "").lower()
-    datasetName = user.username + "_" + name
+    datasetName = user.username + "_" + normalizeString(name,"_")
     with open(file_location, "wb+") as file_object:
         file_object.write(file.file.read())
-    dataset = Dataset(datasetName)
+    dataset = Dataset(datasetName, name)
     dataset.initDataframe(file_location)
     attributes = dataset.getAttributes()
     df = dataset.getDataFrame()

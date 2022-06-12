@@ -63,9 +63,9 @@ def attributeStrategyTemplate(template, ambiguities, pk, ck, tableName, operator
         a_query = template[0]
         if ck is not None:
             a_query = updatePKsFromCkAttribute(a_query, ck)
-            print("Updated:", a_query)
+            #print("Updated:", a_query)
             a_query = replacePKsAttribute(a_query, ck, None)
-            print("Replaced:", a_query)
+            #print("Replaced:", a_query)
         a_query = a_query.replace('$PK$', ('"' + pk + '"'))
         a_query = a_query.replace('$TABLE$', tableName)
         a_query = a_query.replace('$OPERATOR$', operator)
@@ -83,7 +83,7 @@ def attributeStrategyTemplate(template, ambiguities, pk, ck, tableName, operator
             a_queries.append(a_query)
     return a_queries
 
-def fullStrategyTemplate(template, ambiguities, ck, tableName, operator, mt, printConfig, attributesTypes):
+def fullStrategyTemplate(template, ambiguities, ck, tableName, operator, mt, printConfig, attributesTypes, id):
     a_queries = []
     type = template[1]
     if type != TYPE_FULL:
@@ -98,6 +98,7 @@ def fullStrategyTemplate(template, ambiguities, ck, tableName, operator, mt, pri
         if a1 in ck or a2 in ck:
             continue
         a_query = a_query_updated
+        a_query = a_query.replace('$ID$', ('"' + id + '"'))
         a_query = a_query.replace('$SUB_PK$', ('"' + subpk + '"'))
         a_query = replacePKs(a_query, ck, subpk)
         a_query = a_query.replace('$TABLE$', tableName)
@@ -118,7 +119,7 @@ def fullStrategyTemplate(template, ambiguities, ck, tableName, operator, mt, pri
             a_queries.append(a_query)
     return a_queries
 
-def rowStrategyTemplate(template, ck, tableName, attributes,attributesTypes, operator, mt, printConfig):
+def rowStrategyTemplate(template, ck, tableName, attributes,attributesTypes, normalizedNameToAttr, operator, mt, printConfig, id):
     type = template[1]
     if type != TYPE_ROW:
         print("*** ERROR. Not a ROW template ", template)
@@ -134,10 +135,12 @@ def rowStrategyTemplate(template, ck, tableName, attributes,attributesTypes, ope
         if checkOperatorWithType(a, None, operator, attributesTypes) == False:
             continue
         a_query = a_query_updated
+        a_query = a_query.replace('$ID$', ('"' + id + '"'))
         a_query = a_query.replace('$SUB_PK$', ('"' + subpk + '"'))
         a_query = replacePKs(a_query, ck, subpk)
         a_query = a_query.replace('$A1$', ('"' + a + '"'))
-        a_query = a_query.replace('$A1_NAME$', ("' " + a + "'"))
+        a_name = normalizedNameToAttr[a].name
+        a_query = a_query.replace('$A1_NAME$', ("' " + a_name + "'"))
         a_query = a_query.replace('$TABLE$', tableName)
         a_query = a_query.replace('$OPERATOR$', operator)
         printo_string = printo(operator, printConfig).strip()
@@ -154,7 +157,7 @@ def rowStrategyTemplate(template, ck, tableName, attributes,attributesTypes, ope
             a_queries.append(a_query)
     return a_queries
 
-def funcStrategyTemplate(template, ck, tableName, attributes, attributesTypes, func, mt, printConfig):
+def funcStrategyTemplate(template, ck, tableName, attributes, attributesTypes, normalizedNameToAttr, func, mt, printConfig, id):
     type = template[1]
     if type != TYPE_FUNC:
         print("*** ERROR. Not a FUNC template ", template)
@@ -171,10 +174,12 @@ def funcStrategyTemplate(template, ck, tableName, attributes, attributesTypes, f
         if checkOperatorWithType(a, None, func, attributesTypes) == False:
             continue
         a_query = a_query_updated
+        a_query = a_query.replace('$ID$', ('"' + id + '"'))
         a_query = a_query.replace('$SUB_PK$', ('"' + subpk + '"'))
         a_query = replacePKs(a_query, ck, subpk)
         a_query = a_query.replace('$A1$', ('"' + a + '"'))
-        a_query = a_query.replace('$A1_NAME$', ("' " + a + "'"))
+        a_name = normalizedNameToAttr[a].name
+        a_query = a_query.replace('$A1_NAME$', ("' " + a_name + "'"))
         a_query = a_query.replace('$TABLE$', tableName)
         a_query = a_query.replace('$FUNC$', func)
         printo_string = prinfFunction(func, printConfig).strip()
@@ -247,7 +252,7 @@ def updateLHSFromLKS(a_query_original, lhs):
         a_query = a_query.replace(token, ' , '.join(newTokens), 1)
     return a_query
 
-def fdStrategyTemplate(template, fd, pk, tableName):
+def fdStrategyTemplate(template, fd, pk, tableName, concept):
     type = template[1]
     if type != TYPE_FD:
         print("*** ERROR. Not an FD ", fd)
@@ -269,6 +274,7 @@ def fdStrategyTemplate(template, fd, pk, tableName):
     a_query = a_query.replace('$RHS$', ('"' + rhs + '"'))
     a_query = a_query.replace('$PK$', ('"' + pk + '"'))
     a_query = a_query.replace('$TABLE$', tableName)
+    a_query = a_query.replace('$CONCEPT$', concept)
     for value in values:
         a_query = a_query.replace('$PRINT_FD$', "' " + value + " '", 1)
     if checkAQueryComplete(a_query):
@@ -299,8 +305,11 @@ def find_a_queries(dataset, templates, matchType, connection,
     attributes = dataset.getNormalizedAttributes()
     attributesWithType = dataset.getAttributes()
     attributesTypes = dict()
+    normalizedNameToAttr = dict()
+    concept = dataset.name
     for attr in attributesWithType:
         attributesTypes[attr.normalizedName] = attr.type
+        normalizedNameToAttr[attr.normalizedName] = attr
     a_queries_with_data = []
     stored_results = [] ## list of <a_query, type, result, template>
     for template in templates:
@@ -309,7 +318,7 @@ def find_a_queries(dataset, templates, matchType, connection,
         if (type == TYPE_FD) and (len(fds) > 0):
             print("*** GENERATING A-QUERIES for FDS")
             for fd in fds:
-                a_query = fdStrategyTemplate(template, fd, pk, tableName)
+                a_query = fdStrategyTemplate(template, fd, pk, tableName, concept)
                 if (a_query is not None and executeQuery):
                     if shuffleQuery:
                         a_query += " ORDER BY random()"
@@ -318,7 +327,7 @@ def find_a_queries(dataset, templates, matchType, connection,
             print("*** GENERATING A-QUERIES for FUNCs")
             for ck in compositeKeys:
                 for func in functions:
-                    a_queries = funcStrategyTemplate(template, ck, tableName, attributes, attributesTypes, func, matchType, print_f)
+                    a_queries = funcStrategyTemplate(template, ck, tableName, attributes, attributesTypes, normalizedNameToAttr, func, matchType, print_f, pk)
                     for a_query in a_queries:
                         if (a_query is not None and executeQuery):
                             if shuffleQuery:
@@ -329,7 +338,7 @@ def find_a_queries(dataset, templates, matchType, connection,
             print("*** GENERATING A-QUERIES for ROWs")
             for ck in compositeKeys:
                 for operator in operators:
-                    a_queries = rowStrategyTemplate(template, ck, tableName, attributes, attributesTypes, operator, matchType, print_f)
+                    a_queries = rowStrategyTemplate(template, ck, tableName, attributes, attributesTypes, normalizedNameToAttr, operator, matchType, print_f, pk)
                     for a_query in a_queries:
                         if (a_query is not None and executeQuery):
                             if shuffleQuery:
@@ -353,7 +362,7 @@ def find_a_queries(dataset, templates, matchType, connection,
             for ck in compositeKeys:
                 subpk = ck[0]
                 for operator in operators:
-                    a_queries = fullStrategyTemplate(template, ambiguities, ck, tableName, operator, matchType, print_f, attributesTypes)
+                    a_queries = fullStrategyTemplate(template, ambiguities, ck, tableName, operator, matchType, print_f, attributesTypes, pk)
                     for a_query in a_queries:
                         if (a_query is not None and executeQuery):
                             if shuffleQuery:
