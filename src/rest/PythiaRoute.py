@@ -238,14 +238,14 @@ def predictSingleAQuery(name: str, index: int, aQuery: str = Form(...), strategy
     print("*** a_queries_with_data: ", a_queries_with_data)
     print("*** stored_results: ", stored_results)
 
-    result = get_results(connection, strategy, scenario, stored_results)
+    result = get_results(connection, strategy, scenario, stored_results, index)
     tName = scenario.datasetName
     return result[0]
 
 
-def get_results(connection, strategy, scenario, a_queries_with_data):
+def get_results(connection, strategy, scenario, a_queries_with_data, assigned_index=0):
     result = []
-    index = 0
+    index = assigned_index
     for a_query, type, results, template, fd in a_queries_with_data:
         tables_from_sentences = []
         dict_from_sentences = []
