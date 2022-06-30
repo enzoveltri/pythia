@@ -3,7 +3,7 @@ import random
 import pandas as pd
 
 from src.pythia import Constants
-from src.pythia.DBUtils import getDBConnection, getEngine, getColumnsName
+from src.pythia.DBUtils import getDBConnection, getEngine, getColumnsName, executeQueryBatch
 from src.pythia.Dataset import Dataset
 from src.pythia.Pythia import toListCompositeKeys, find_a_queries
 from src.pythia.PythiaExample import PythiaExample
@@ -31,7 +31,7 @@ def tottoSentence(table, concept,  pkValue, pkAttributeName,  cellValue, label):
     pkValue = normalizeAscii(str(pkValue))
     cellValue = normalizeAscii(str(cellValue))
     input = "totto table: "
-    #input += "<page_title> " + table + " </page_title> "
+    input += "<page_title> " + concept + " </page_title> "
     #input += "<section_title> " + concept + " </section_title> "
     rowValue = "<row> <cell> " + str(pkValue) + " <col_header> " + str(pkAttributeName) + " </col_header> </cell> <cell> " + str(cellValue) + " <col_header> " + str(label) + " </col_header> </cell> </row>"
     input += "<table> " + rowValue + " </table>"
@@ -243,11 +243,13 @@ def attr_amb(dataset, pysqldf, sentenceGenerator, operator, matchType, limit, li
                 toTotto = tottoSentence(dataset.getDatasetName(), dataset.concept, pkCell, pkName, attr1Cell, label)
                 sentence = ""
                 if sentenceGenerator is not None: sentence = sentenceGenerator.predict(toTotto)
+                print(sentence)
                 pythiaExample = PythiaExample(dfSentence, sentence, q, toTotto, Constants.TYPE_ATTRIBUTE, operator, matchType)
                 examples.append(pythiaExample)
                 counter += 1
                 toTotto = tottoSentence(dataset.getDatasetName(), dataset.concept, pkCell, pkName, attr2Cell, label)
                 if sentenceGenerator is not None: sentence = sentenceGenerator.predict(toTotto)
+                print(sentence)
                 pythiaExample = PythiaExample(dfSentence, sentence, q, toTotto, Constants.TYPE_ATTRIBUTE, operator, matchType)
                 examples.append(pythiaExample)
                 counter += 1
@@ -256,6 +258,7 @@ def attr_amb(dataset, pysqldf, sentenceGenerator, operator, matchType, limit, li
                 toTotto = tottoSentence(dataset.getDatasetName(), dataset.concept, pkCell, pk.name, attr2Cell, label)
                 sentence = ""
                 if sentenceGenerator is not None: sentence = sentenceGenerator.predict(toTotto)
+                print(sentence)
                 pythiaExample = PythiaExample(dfSentence, sentence, q, toTotto, Constants.TYPE_ATTRIBUTE, operator, matchType)
                 examples.append(pythiaExample)
                 counter += 1
@@ -264,6 +267,7 @@ def attr_amb(dataset, pysqldf, sentenceGenerator, operator, matchType, limit, li
                 toTotto = tottoSentence(dataset.getDatasetName(), dataset.concept, pkCell, pk.name, cell, label)
                 sentence = ""
                 if sentenceGenerator is not None: sentence = sentenceGenerator.predict(toTotto)
+                print(sentence)
                 pythiaExample = PythiaExample(dfSentence, sentence, q, toTotto, Constants.TYPE_ATTRIBUTE, operator, matchType)
                 examples.append(pythiaExample)
                 counter += 1
@@ -506,14 +510,14 @@ def no_amb(dataset, pysqldf, sentenceGenerator, operator, matchType, limit, limi
                 if limitPerType != -1 and counter >= limitPerType: break
     return examples
 
-if __name__ == '__main__': ## sentence generation
+if __name__ == '__main__xx': ## sentence generation
     DB_USER = "postgres"
     DB_PASSWORD = "postgres"
     DB_HOST = "localhost"
     DB_PORT = "5432"
     DB_NAME = "ambiguities"
 
-    name = "wineqt"
+    name = "abalone"
     #name = "heart_2020"
     datasetJson = name + ".json"
     filePath = "/Users/enzoveltri/Downloads/datasets/"
@@ -547,17 +551,17 @@ if __name__ == '__main__': ## sentence generation
     examples = []
     sentenceGenerator = T5SentenceGenerator()
     #sentenceGenerator = None
-    limit = 1
-    examplePerType = 1
+    limit = 20
+    examplePerType = 5
     useFDs = False
-    calculateAttribute = True
+    calculateAttribute = False
     calculateRow = False
     calculateFull = False
     calculateNoAmb = True
     #dataset.concept = "heart"
     #dataset.datasetName = "heart"
-    dataset.concept = "wineqt"
-    dataset.datasetName = "wineqt"
+    dataset.concept = "abalone species"
+    dataset.datasetName = "abalone"
     #operators = ["<", ">"]
     operators = ["="]
     #mts = [Constants.MATCH_TYPE_CONTRADICTING, Constants.MATCH_TYPE_UNIFORM_TRUE, Constants.MATCH_TYPE_UNIFORM_FALSE]
@@ -587,7 +591,7 @@ if __name__ == '__main__': ## sentence generation
     if save:
         datasetJson = name + "_sentence.json"
         filePath = "/Users/enzoveltri/Downloads/datasets/"
-        filePath = "/Users/enzoveltri/Downloads/datasets/annotation-exp/"
+        filePath = "/Users/enzoveltri/Downloads/datasets/annotation-exp-no-amb/"
         jsonFile = filePath + datasetJson
         with open(jsonFile, 'w') as outfile:
             outfile.write("[")
@@ -628,14 +632,83 @@ def to_df_full(row, cols):
         to_df[cols[i]] = [row[i], row[i+1], row[i+2]]
     return sentence, to_df
 
-if __name__ == '__main__xx': ## sentence generation from Templates
+def generate_for_pk(connection, examples, limit, notAmbiguousAttr, pk, shuffle, table):
+    for attr in notAmbiguousAttr:
+        if (attr.name == pk.name): continue
+        q = 'SELECT CONCAT(b1."' + pk.normalizedName + '", ' + "' has ', " + 'b1."' + attr.normalizedName + '", ' + "' " + attr.name + "'), " + \
+            'b1."' + pk.normalizedName + '", ' + 'b1."' + attr.normalizedName + '" ' + "FROM " + table + " b1"
+        qMod = q
+        if shuffle:
+            qMod += " ORDER BY random()"
+        if limit > 0:
+            qMod += " LIMIT " + str(limit)
+        results = executeQueryBatch(qMod, connection)
+        if len(results) > 0:
+            for r in results:
+                sentence = r[0]
+                pkValue = r[1]
+                attrValue = r[2]
+                data = {}
+                data[pk.name] = [pkValue]
+                data[attr.name] = [attrValue]
+                pythiaExample = PythiaExample(pd.DataFrame.from_dict(data), sentence, q, "", "", ">", "NO_AMBIGUITY")
+                # pythiaExample = PythiaExample(data, sentence, q, "", "", ">", "NO_AMBIGUITY")
+                examples.append(pythiaExample)
+
+
+def generate_for_ck(connection, examples, limit, notAmbiguousAttr, ck, shuffle, table):
+    for attr in notAmbiguousAttr:
+        skip = False
+        for c in ck:
+            if c.name == attr.name:
+                skip = True
+        if skip: continue
+        q = "SELECT CONCAT("
+        ckStr = ""
+        for c in ck:
+            ckStr += 'b1."' + c.normalizedName + '" ||'+"', '|| "
+        ckStr = ckStr[0:-10]
+        ckStr += ","
+        q += ckStr + "' has ', " + 'b1."' + attr.normalizedName + '", ' + "' " + attr.name + "'), " + \
+            ckStr + ' b1."' + attr.normalizedName + '" ' + "FROM " + table + " b1"
+        qMod = q
+        if shuffle:
+            qMod += " ORDER BY random()"
+        if limit > 0:
+            qMod += " LIMIT " + str(limit)
+        results = executeQueryBatch(qMod, connection)
+        if len(results) > 0:
+            for r in results:
+                sentence = r[0]
+                pkValue = r[1]
+                attrValue = r[2]
+                data = {}
+                data["key"] = [pkValue]
+                data[attr.name] = [attrValue]
+                pythiaExample = PythiaExample(pd.DataFrame.from_dict(data), sentence, q, "", "", ">", "NO_AMBIGUITY")
+                examples.append(pythiaExample)
+
+
+def generateNotAmbiguous(dataset, examples, connection, limit = -1, shuffle=True):
+    notAmbiguousAttr = dataset.findNonAmbiguousAttributes()
+    print(notAmbiguousAttr)
+    pk = dataset.getPk()
+    table = dataset.getDatasetName()
+    generate_for_pk(connection, examples, limit, notAmbiguousAttr, pk, shuffle, table)
+    if len(dataset.getCompositeKeys()) > 0:
+        ck = dataset.getCompositeKeys()[0]
+        generate_for_ck(connection, examples, limit, notAmbiguousAttr, ck, shuffle, table)
+
+if __name__ == '__main__': ## sentence generation from Templates
     DB_USER = "postgres"
     DB_PASSWORD = "postgres"
     DB_HOST = "localhost"
     DB_PORT = "5432"
     DB_NAME = "ambiguities"
 
-    name = "mushroom"
+    name = "wineqt"
+    concept = "wineqt"
+    limit = 200
     #name = "heart_2020"
     datasetJson = name + ".json"
     filePath = "/Users/enzoveltri/Downloads/datasets/"
@@ -646,7 +719,7 @@ if __name__ == '__main__xx': ## sentence generation from Templates
         dict = json.load(json_file)
     connection = getDBConnection(DB_USER, DB_PASSWORD, DB_HOST, DB_PORT, DB_NAME)
     datasetMunch = DefaultMunch.fromDict(dict, Dataset)
-    dataset = Dataset(name)
+    dataset = Dataset(name, concept)
     dataset.datasetName = datasetMunch.datasetName
     dataset.attributes = datasetMunch.attributes
     dataset.pk = datasetMunch.pk
@@ -666,11 +739,12 @@ if __name__ == '__main__xx': ## sentence generation from Templates
     matches = [MATCH_TYPE_CONTRADICTING]
     templates = [rowsTemplates, attributeTemplates, fullTemplates]
     examples = []
+    generateNotAmbiguous(dataset, examples, connection, limit=limit)
     for matchType in matches:
         for template in templates:
             a_queries, a_queries_with_data = find_a_queries(dataset, template, matchType, connection,
                                                             operators=["=", ">", "<"], functions=["min", "max"],
-                                                            executeQuery=True, limitQueryResults=10, shuffleQuery=True)
+                                                            executeQuery=True, limitQueryResults=limit, shuffleQuery=True)
             print("Total A-Queries Generated:", len(a_queries))
             print("Differents A-Queries: ", len(set(a_queries)))
             #for aq in a_queries:
@@ -691,7 +765,7 @@ if __name__ == '__main__xx': ## sentence generation from Templates
                     examples.append(pythiaExample)
     ## json export
     datasetJson = name + "_template_sentence.json"
-    filePath = "/Users/enzoveltri/Downloads/datasets/"
+    filePath = "/Users/enzoveltri/Downloads/datasets/nl2sql-revision/"
     jsonFile = filePath + datasetJson
     with open(jsonFile, 'w') as outfile:
         outfile.write("[")

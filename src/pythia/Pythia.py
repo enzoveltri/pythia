@@ -356,7 +356,6 @@ def find_a_queries(dataset, templates, matchType, connection,
                 ck = None
                 if len(compositeKeys) > 0:
                     ck = compositeKeys[0]
-                    print("*** CK:", ck)
                 a_queries = attributeStrategyTemplate(template, ambiguities, pk, ck, tableName, operator, matchType,print_f, attributesTypes)
                 for a_query in a_queries:
                     if (a_query is not None and executeQuery):
