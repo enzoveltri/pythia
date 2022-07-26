@@ -12,8 +12,11 @@ from src.pythia.DBUtils import getEngine, getDBConnection, executeQueryBatch, ge
 from src.pythia.PythiaExample import PythiaExample
 
 SENTENCES_FILES = "/Users/enzoveltri/Downloads/datasets/annotation-exp/*.json"
+#SENTENCES_FILES = "/Users/enzoveltri/Downloads/datasets/nl2sql-revision/*_sentence.json"
 TEMPLATE_FILES = "/Users/enzoveltri/Downloads/datasets/annotation-template/*.json"
+#TEMPLATE_FILES = "/Users/enzoveltri/Downloads/datasets/nl2sql-revision/*_template.json"
 EXCEL_FOLDER = "/Users/enzoveltri/Downloads/datasets/annotation-exp/"
+#EXCEL_FOLDER = "/Users/enzoveltri/Downloads/datasets/annotation-exp-2/"
 DB_USER = "postgres"
 DB_PASSWORD = "postgres"
 DB_HOST = "localhost"
