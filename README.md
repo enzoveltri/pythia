@@ -8,7 +8,7 @@ To enable scalability, we finally introduce a SQL approach that allows the gener
 We show the high accuracy of our solution in profiling relational tables and report on how our automatically generated examples lead to drastic quality improvements in two fact-checking applications, including a website with thousands of users, and in a text-to-SQL system.
 
 # News
-- 2022-06-16 [BEST DEMO PAPER - SIGMOD 2022](https://dl.acm.org/doi/10.1145/3514221.3520164)
+- [2022-06-16](https://sigmod.org/sigmod-awards/sigmod-best-demonstration-award/) [BEST DEMO PAPER - SIGMOD 2022](https://dl.acm.org/doi/10.1145/3514221.3520164)
 
 # Repository
 - Data used in the paper:
