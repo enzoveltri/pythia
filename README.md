@@ -8,6 +8,7 @@ To enable scalability, we finally introduce a SQL approach that allows the gener
 We show the high accuracy of our solution in profiling relational tables and report on how our automatically generated examples lead to drastic quality improvements in two fact-checking applications, including a website with thousands of users, and in a text-to-SQL system.
 
 # News
+- 2022-08 Research paper [Data Ambiguity Profiling for the Generation of Training Examples](https://www.eurecom.fr/~papotti/files/Pythia_ICDE_2023.pdf) Accepted to ICDE 2023 
 - [2022-06-16](https://sigmod.org/sigmod-awards/sigmod-best-demonstration-award/) [BEST DEMO PAPER - SIGMOD 2022](https://dl.acm.org/doi/10.1145/3514221.3520164)
 
 # Repository
@@ -48,3 +49,5 @@ To run the backend make sure you have a Postresql instance installed.
 
 # References
 [[1] Unsupervised Generation of Ambiguous Textual Claims from Relational Data; Veltri Enzo, Santoro Donatello, Badaro Gilbert, Saeed Mohammed and Papotti Paolo. SIGMOD, 2022. Demo Paper](https://dl.acm.org/doi/10.1145/3514221.3520164)
+
+[[2] Data Ambiguity Profiling for the Generation of Training Examples; Veltri Enzo, Badaro Gilbert, Saeed Mohammed and Papotti Paolo. ICDE, 2023. Research Paper](https://www.eurecom.fr/~papotti/files/Pythia_ICDE_2023.pdf)
